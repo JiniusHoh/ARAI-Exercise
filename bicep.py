@@ -183,9 +183,25 @@
 #     app()
 
 import streamlit as st
+import cv2
+import numpy as np
+
+# Function to process video frames with OpenCV
+def process_frame(frame):
+    # Convert frame to OpenCV format (BGR)
+    frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+    # Perform some processing with OpenCV
+    # For example, apply a simple edge detection filter
+    edges = cv2.Canny(frame_bgr, 100, 200)
+
+    # Convert processed frame back to RGB format for display
+    edges_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+
+    return edges_rgb
 
 # Streamlit app
-st.title("WebRTC Webcam Stream")
+st.title("OpenCV Video Frame Processing")
 
 # HTML and JavaScript code to access webcam and send stream
 html_code = """
@@ -204,3 +220,26 @@ html_code = """
 
 # Render HTML code in Streamlit app
 st.components.v1.html(html_code, height=400)
+
+# Placeholder for displaying processed frames
+processed_frame_placeholder = st.empty()
+
+# Continuously process frames from the webcam stream
+while True:
+    # Capture frame from webcam stream
+    # Here, you would retrieve frames from your 'offer' endpoint
+    # For demonstration purposes, we'll create a dummy frame
+    dummy_frame = np.random.randint(0, 255, size=(480, 640, 3), dtype=np.uint8)
+
+    # Process frame with OpenCV
+    processed_frame = process_frame(dummy_frame)
+
+    # Display processed frame in Streamlit app
+    processed_frame_placeholder.image(processed_frame, channels="BGR")
+
+    # Add a short delay to control frame rate
+    # This is optional and can be adjusted as needed
+    # Depending on your application, you may want to synchronize frame processing with the actual frame rate
+    # For real-time applications, you may want to remove this delay
+    st.experimental_streamlit_sleep(0.1)
+
