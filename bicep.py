@@ -2,9 +2,9 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import streamlit as st
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer, WebRtcMode
 from gtts import gTTS
 import base64
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer, WebRtcMode
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
@@ -56,8 +56,7 @@ class VideoTransformer(VideoTransformerBase):
 
     def transform(self, frame):
         image = frame.to_ndarray(format="bgr24")
-        
-        # Initialize MediaPipe pose detection
+
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
@@ -67,9 +66,9 @@ class VideoTransformer(VideoTransformerBase):
                 shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
                             landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                         landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
                 wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                         landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
 
                 angle = calculate_angle(shoulder, elbow, wrist)
 
@@ -95,7 +94,7 @@ class VideoTransformer(VideoTransformerBase):
                         self.stage = "down"
                         self.feedback_status = "Arms straightened. Go to curl."
                         self.last_feedback = self.feedback_status
-                        return image  # Skip the rest of the loop
+                        return image
 
                     if self.feedback_status != self.last_feedback:
                         self.play_audio(self.feedback_status, filename)
@@ -136,14 +135,16 @@ class VideoTransformer(VideoTransformerBase):
         return image
 
 def app():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide")  # Set the layout to wide
     st.title("Left Bicep Curl Exercise")
     remind_text = "Make sure to allow access to your camera and speaker. Refresh the website if there is a lag."
-    st.markdown(remind_text)
+    st.markdown(remind_text)  # Display remark below the frame
     remark_text = "If there is no autoplay sound, press the most bottom audio play button once to autoplay the feedback sound. Might need some time to start autoplay the feedback sound."
-    st.markdown(remark_text)
+    st.markdown(remark_text)  # Display remark below the frame
 
-    gif_path = 'bicep_curl.gif'
+    # GIF placeholder
+    gif_path = 'bicep_curl.gif'  # Replace with the path to your GIF file
+    # CSS to control the size of the GIF
     st.markdown(
         """
         <style>
@@ -157,11 +158,17 @@ def app():
     )
     gif_placeholder = st.empty()
 
-    start_button = st.button('Start Exercise')
+    # Create a sidebar
+    st.sidebar.title('Left Bicep Curl Exercise')
+    st.sidebar.subheader('Parameters')
+    # Creating a button for webcam
+    use_webcam = st.sidebar.button('Use Webcam')
+    st.markdown(' ## Output')
+    stframe = st.empty()
 
-    if start_button:
-        gif_placeholder.empty()
-        webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_transformer_factory=VideoTransformer)
+    if use_webcam:
+        gif_placeholder.empty()  # Clear the GIF
+        webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
     else:
         gif_html = f"""
         <div style="text-align: center;">
@@ -174,5 +181,3 @@ def app():
 
 if __name__ == '__main__':
     app()
-
-
