@@ -69,6 +69,10 @@ def app():
 
         cap = cv2.VideoCapture(0)
 
+        if not cap.isOpened():
+            st.error("Error: Could not open webcam.")
+            return
+
         # Set initial values for stage and counter
         counter = 0
         stage = "down"
