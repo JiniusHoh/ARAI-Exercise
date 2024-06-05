@@ -198,7 +198,6 @@ def create_audio_html(b64_data):
     """
     return html_string
 
-# Initialize MediaPipe's drawing utilities and pose module
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
@@ -234,8 +233,7 @@ class VideoTransformer(VideoTransformerBase):
 
     def transform(self, frame):
         image = frame.to_ndarray(format="bgr24")
-        
-        # Initialize MediaPipe pose detection
+
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
@@ -245,9 +243,9 @@ class VideoTransformer(VideoTransformerBase):
                 shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
                             landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                         landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
                 wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                         landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
 
                 angle = calculate_angle(shoulder, elbow, wrist)
 
@@ -273,7 +271,7 @@ class VideoTransformer(VideoTransformerBase):
                         self.stage = "down"
                         self.feedback_status = "Arms straightened. Go to curl."
                         self.last_feedback = self.feedback_status
-                        return image  # Skip the rest of the loop
+                        return image
 
                     if self.feedback_status != self.last_feedback:
                         self.play_audio(self.feedback_status, filename)
@@ -339,7 +337,13 @@ def app():
 
     if start_button:
         gif_placeholder.empty()
-        webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_transformer_factory=VideoTransformer)
+        webrtc_streamer(
+            key="example",
+            mode=WebRtcMode.SENDRECV,
+            video_transformer_factory=VideoTransformer,
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={"video": True, "audio": False},
+        )
     else:
         gif_html = f"""
         <div style="text-align: center;">
