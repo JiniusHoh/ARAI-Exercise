@@ -55,7 +55,7 @@ def calculate_angle(a, b, c):
     return int(angle)
 
 def app():
-    st.set_page_config(layout="wide")  # Set the layout to wide
+    # st.set_page_config(layout="wide")  # Set the layout to wide
     st.title("Left Bicep Curl Exercise")
     remind_text = "Make sure to allow access to your camera and speaker. Refresh the website if there is a lag."
     st.markdown(remind_text)  # Display remark below the frame
