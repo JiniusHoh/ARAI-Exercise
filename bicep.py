@@ -354,51 +354,54 @@ def app():
                         left_elbow_y = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * image.shape[0])
 
                     # Display the angle value near the left elbow position
-                    cv2.putText(image, str(angle),
-                                (left_elbow_x, left_elbow_y),  # Use left elbow coordinates
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                        cv2.putText(image, str(angle),
+                                    (left_elbow_x, left_elbow_y),  # Use left elbow coordinates
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-                # Adjust sequence stage text
-                cv2.putText(image, f"Stage: {sequence_stage}",
-                            (10, image.shape[0] - 55),  # Position at the left bottom corner
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+                    # Adjust sequence stage text
+                    cv2.putText(image, f"Stage: {sequence_stage}",
+                                (10, image.shape[0] - 55),  # Position at the left bottom corner
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
-                # Adjust feedback status text
-                cv2.putText(image, f"Feedback: {feedback_status}",
-                            (10, image.shape[0] - 20),  # Position above the sequence stage text
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+                    # Adjust feedback status text
+                    cv2.putText(image, f"Feedback: {feedback_status}",
+                                (10, image.shape[0] - 20),  # Position above the sequence stage text
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
-            except Exception as e:
-                print(e)
-                pass
+                except Exception as e:
+                    print(e)
+                    pass
 
-            cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
-            cv2.putText(image, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
-            cv2.putText(image, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(image, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
-            cv2.putText(image, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
+                cv2.putText(image, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
+                cv2.putText(image, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(image, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
+                cv2.putText(image, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-            # Draw landmarks and connections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                        mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-                                        mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
+                # Draw landmarks and connections
+                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                            mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
+                                            mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
 
-            # Resize the image to make it larger
-            image = cv2.resize(image, (1200, 800))  # Resize the image
+                # Resize the image to make it larger
+                image = cv2.resize(image, (1200, 800))  # Resize the image
 
-            stframe.image(image, channels="BGR")  # Display RGB frame
+                stframe.image(image, channels="BGR")  # Display RGB frame
 
-else:
-    gif_html = f"""
-    <div style="text-align: center;">
-        <img src="data:image/gif;base64,{base64.b64encode(open(gif_path, "rb").read()).decode()}" class="small-gif">
-    </div>
-    """
-    st.markdown(gif_html, unsafe_allow_html=True)
-    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree.**')
-    st.markdown('**Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
+        cap.release()
+
+    else:
+        gif_html = f"""
+        <div style="text-align: center;">
+            <img src="data:image/gif;base64,{base64.b64encode(open(gif_path, "rb").read()).decode()}" class="small-gif">
+        </div>
+        """
+        st.markdown(gif_html, unsafe_allow_html=True)
+        st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree.**')
+        st.markdown('**Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
 
 if __name__ == '__main__':
     app()
+
 
 
