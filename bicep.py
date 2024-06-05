@@ -183,23 +183,137 @@
 #     app()
 
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jan  7 20:45:26 2021
-
-@author: malraharsh
-"""
-import cv2
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration
+import av
+import cv2
+import mediapipe as mp
+import numpy as np
+from gtts import gTTS
+import base64
 
-st.title("Webcam Live Feed")
+def autoplay_audio(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    return b64
+
+def create_audio_html(b64_data):
+    html_string = f"""
+        <audio controls autoplay="true">
+            <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
+        </audio>
+    """
+    return html_string
+
+mp_drawing = mp.solutions.drawing_utils
+mp_pose = mp.solutions.pose
+
+def calculate_angle(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+
+    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+    angle = np.abs(radians * 180.0 / np.pi)
+
+    if angle > 180.0:
+        angle = 360 - angle
+
+    return int(angle)
+
+class VideoProcessor:
+    def __init__(self):
+        self.counter = 0
+        self.stage = "down"
+        self.sequence_stage = "Initial"
+        self.feedback_status = ""
+        self.last_feedback = ""
+
+    def play_audio(self, feedback_text, filename):
+        tts = gTTS(feedback_text)
+        tts.save(filename)
+        audio_file = filename
+
+        b64_data = autoplay_audio(audio_file)
+        html_content = create_audio_html(b64_data)
+        st.markdown(html_content, unsafe_allow_html=True)
+
+    def recv(self, frame):
+        frm = frame.to_ndarray(format="bgr24")
+
+        image = cv2.cvtColor(frm, cv2.COLOR_BGR2RGB)
+
+        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+            results = pose.process(image)
+
+            try:
+                landmarks = results.pose_landmarks.landmark
+
+                shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                            landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                            landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                            landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+
+                angle = calculate_angle(shoulder, elbow, wrist)
+
+                if angle > 160 and self.sequence_stage != "Bicep Curl":
+                    self.sequence_stage = "Straighten Arms"
+                    self.stage = "down"
+                    self.feedback_status = "Arms straightened. Go to curl."
+                elif self.sequence_stage == "Straighten Arms" and angle < 110 and self.stage == "down":
+                    self.sequence_stage = "Bicep Curl"
+                    self.stage = "up"
+                    self.counter += 1
+                    print(self.counter)
+
+                if self.sequence_stage == "Bicep Curl":
+                    if angle < 45:
+                        self.feedback_status = "Lower down your arm."
+                        filename = 'lower_arm.mp3'
+                    elif 45 <= angle <= 65:
+                        self.feedback_status = "Good Curl!"
+                        filename = 'goodcurl.mp3'
+                    elif angle > 160 and self.stage == "up":
+                        self.sequence_stage = "Straighten Arms"
+                        self.stage = "down"
+                        self.feedback_status = "Arms straightened. Go to curl."
+                        self.last_feedback = self.feedback_status
+                        return av.VideoFrame.from_ndarray(frm, format='bgr24')  # Skip the rest of the loop
+
+                    if self.feedback_status != self.last_feedback:
+                        self.play_audio(self.feedback_status, filename)
+                        self.last_feedback = self.feedback_status
+
+            except Exception as e:
+                print(e)
+                pass
+
+            cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
+            cv2.putText(image, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
+            cv2.putText(image, str(self.counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(image, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
+            cv2.putText(image, self.stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                      mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
+                                      mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
+
+            image = cv2.resize(image, (1200, 800))  # Resize the image
+
+        return av.VideoFrame.from_ndarray(image, format='bgr24')
+
+st.title("Left Bicep Curl Exercise")
+
 run = st.checkbox('Run')
-FRAME_WINDOW = st.image([])
-camera = cv2.VideoCapture(0)
 
-while run:
-    _, frame = camera.read()
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    FRAME_WINDOW.image(frame)
+if run:
+    webrtc_streamer(key="example", video_processor_factory=VideoProcessor,
+                    rtc_configuration=RTCConfiguration(
+                        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+                    )
+    )
 else:
     st.write('Stopped')
-    
