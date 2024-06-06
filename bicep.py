@@ -230,7 +230,7 @@ def process_frame(frame):
 
     return frame
 
-# Function to capture frames from webcam
+# Function to capture frames from webcam using OpenCV
 def webcam():
     # Open webcam
     cap = cv2.VideoCapture(0)
