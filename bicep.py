@@ -201,12 +201,18 @@
 # if __name__ == '__main__':
 #     app()
 
-import streamlit as st
-from webcam import webcam
+import cv2
 
-captured_image = webcam()
-# if captured_image is None:
-#     st.write("Waiting for capture...")
-# else:
-#     st.write("Got an image from the webcam:")
-#     st.image(captured_image)
+def webcam():
+    # Open the webcam
+    cap = cv2.VideoCapture(0)  # 0 is the default camera index, change it if you have multiple cameras
+    
+    if not cap.isOpened():
+        print("Error: Unable to open webcam.")
+        return None
+    
+    # Release the camera
+    cap.release()
+
+# Example usage
+webcam()
