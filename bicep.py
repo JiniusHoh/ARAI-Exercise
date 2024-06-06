@@ -293,12 +293,20 @@
 
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, VideoProcessorBase
+import av
+
+class VideoProcessor(VideoProcessorBase):
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+
+        # You can perform any image processing here (optional)
+        # For instance, convert to grayscale:
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 st.title("Webcam Live Feed")
 st.subheader("This is a live webcam feed using Streamlit and WebRTC")
 
-# Start the webcam stream
-webrtc_streamer(key="example")
-
-
+webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_processor_factory=VideoProcessor)
