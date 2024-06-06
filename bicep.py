@@ -293,36 +293,59 @@
 
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, VideoProcessorBase
-import av
 import cv2
+import numpy as np
 import mediapipe as mp
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
 
-# Initialize MediaPipe
-mp_drawing = mp.solutions.drawing_utils
+# Streamlit app
+st.title("MediaPipe Detection with Webcam")
+
+# MediaPipe initialization
 mp_face_detection = mp.solutions.face_detection
+face_detection = mp_face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5)
 
-class VideoProcessor(VideoProcessorBase):
-    def __init__(self):
-        self.face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.2)
-    
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
+# WebRTC video streaming
+webrtc_ctx = webrtc_streamer(
+    key="webcam",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration=RTCConfiguration(
+        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    ),
+    media_stream_constraints={"video": True, "audio": False},
+)
 
-        # Convert the image from BGR to RGB
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+# Process frames from the video stream
+while True:
+    if webrtc_ctx.video_receiver:
+        try:
+            frame = webrtc_ctx.video_receiver.get_frame(timeout=1)
+        except queue.Empty:
+            frame = None
 
-        # Perform face detection
-        results = self.face_detection.process(img_rgb)
+        if frame is not None:
+            img = frame.to_ndarray(format="bgr24")
 
-        # Draw face detection annotations on the image
-        if results.detections:
-            for detection in results.detections:
-                mp_drawing.draw_detection(img, detection)
+            # Flip the image horizontally for a later selfie-view display
+            img = cv2.flip(img, 1)
 
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+            # To improve performance, optionally mark the image as not writeable to
+            # pass by reference.
+            img.flags.writeable = False
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            results = face_detection.process(img)
 
-st.title("Webcam Live Feed with MediaPipe Face Detection")
-st.subheader("This is a live webcam feed using Streamlit, WebRTC, and MediaPipe")
+            # Draw the face detection annotations on the image.
+            img.flags.writeable = True
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            if results.detections:
+                for detection in results.detections:
+                    mp_drawing.draw_detection(img, detection)
 
-webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_processor_factory=VideoProcessor)
+            # Display the image in Streamlit
+            st.image(img, channels="BGR")
+    else:
+        break
+
+# Close the MediaPipe face detection
+face_detection.close()
