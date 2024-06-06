@@ -206,30 +206,27 @@
 
 
 import streamlit as st
-import cv2
-import numpy as np
+from streamlit_webrtc import VideoTransformer, webrtc_streamer
 
-st.title("Webcam Stream")
+class VideoProcessor(VideoTransformer):
+    def transform(self, frame):
+        # Here you can perform any processing on the frame
+        return frame
 
-# Function to capture frames from webcam
-def capture_frame():
-    video_capture = cv2.VideoCapture(0)
-    if not video_capture.isOpened():
-        st.error("Error: Unable to access the webcam.")
-        return None
-    ret, frame = video_capture.read()
-    video_capture.release()
-    return frame
+def main():
+    st.title("Webcam Stream")
 
-st.write("Click 'Start' to begin streaming from the webcam.")
-if st.button("Start"):
-    while True:
-        frame = capture_frame()
-        if frame is not None:
-            # Convert the frame from BGR to RGB format
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            st.image(frame_rgb)
-        else:
-            break
-        if st.button("Stop"):
-            break
+    # Create a WebRTC streamer to capture webcam video
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        video_transformer_factory=VideoProcessor,
+        async_transform=True,
+    )
+
+    # If we have a streamer object, show the video feed
+    if webrtc_ctx.video_transformer:
+        st.write("Webcam stream:")
+        st.video(webrtc_ctx.video_transformer)
+
+if __name__ == "__main__":
+    main()
