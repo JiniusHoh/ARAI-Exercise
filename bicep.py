@@ -211,7 +211,7 @@ import streamlit as st
 
 # Function to process each frame
 def process_frame(frame):
-    # Example: Convert frame to grayscale
+    # Convert frame to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     return gray
 
