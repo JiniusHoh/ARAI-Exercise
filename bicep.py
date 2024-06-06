@@ -218,77 +218,81 @@
 # if __name__ == '__main__':
 #     app()
 
-import asyncio
-import base64
-import cv2
-import numpy as np
-import websockets
+# import asyncio
+# import base64
+# import cv2
+# import numpy as np
+# import websockets
 
-# HTML/JavaScript code
-html_code = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Stream</title>
-</head>
-<body>
-    <video id="localVideo" autoplay playsinline muted></video>
-    <script>
-        const ws = new WebSocket('ws://localhost:8765');
+# # HTML/JavaScript code
+# html_code = """
+# <!DOCTYPE html>
+# <html lang="en">
+# <head>
+#     <meta charset="UTF-8">
+#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#     <title>Webcam Stream</title>
+# </head>
+# <body>
+#     <video id="localVideo" autoplay playsinline muted></video>
+#     <script>
+#         const ws = new WebSocket('ws://localhost:8765');
 
-        const videoElement = document.getElementById('localVideo');
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                videoElement.srcObject = stream;
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                setInterval(() => {
-                    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob(blob => {
-                        ws.send(blob);
-                    }, 'image/jpeg');
-                }, 1000 / 30);
-            })
-            .catch(error => {
-                console.error('Error accessing webcam:', error);
-            });
-    </script>
-</body>
-</html>
-"""
+#         const videoElement = document.getElementById('localVideo');
+#         navigator.mediaDevices.getUserMedia({ video: true })
+#             .then(stream => {
+#                 videoElement.srcObject = stream;
+#                 const canvas = document.createElement('canvas');
+#                 const ctx = canvas.getContext('2d');
+#                 setInterval(() => {
+#                     ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+#                     canvas.toBlob(blob => {
+#                         ws.send(blob);
+#                     }, 'image/jpeg');
+#                 }, 1000 / 30);
+#             })
+#             .catch(error => {
+#                 console.error('Error accessing webcam:', error);
+#             });
+#     </script>
+# </body>
+# </html>
+# """
 
-# OpenCV processing function
-async def process_frames(websocket, path):
-    while True:
-        # Receive frame from the frontend
-        frame_blob = await websocket.recv()
-        frame = cv2.imdecode(np.frombuffer(frame_blob, np.uint8), cv2.IMREAD_COLOR)
+# # OpenCV processing function
+# async def process_frames(websocket, path):
+#     while True:
+#         # Receive frame from the frontend
+#         frame_blob = await websocket.recv()
+#         frame = cv2.imdecode(np.frombuffer(frame_blob, np.uint8), cv2.IMREAD_COLOR)
 
-        # Perform pose estimation and bicep curl exercise detection
-        # Replace this with your actual detection logic using OpenCV
+#         # Perform pose estimation and bicep curl exercise detection
+#         # Replace this with your actual detection logic using OpenCV
 
-        # Example: Convert frame to grayscale
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#         # Example: Convert frame to grayscale
+#         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # Example: Draw a rectangle on the frame
-        cv2.rectangle(gray_frame, (100, 100), (200, 200), (0, 255, 0), 2)
+#         # Example: Draw a rectangle on the frame
+#         cv2.rectangle(gray_frame, (100, 100), (200, 200), (0, 255, 0), 2)
 
-        # Convert processed frame back to JPEG format and send to frontend
-        _, jpeg_frame = cv2.imencode('.jpg', gray_frame)
-        await websocket.send(base64.b64encode(jpeg_frame).decode('utf-8'))
+#         # Convert processed frame back to JPEG format and send to frontend
+#         _, jpeg_frame = cv2.imencode('.jpg', gray_frame)
+#         await websocket.send(base64.b64encode(jpeg_frame).decode('utf-8'))
 
-async def main():
-    # Start WebSocket server for communication
-    async with websockets.serve(process_frames, "localhost", 8765):
-        # Serve HTML/JavaScript code
-        while True:
-            await asyncio.sleep(1)  # Keep the event loop running
+# async def main():
+#     # Start WebSocket server for communication
+#     async with websockets.serve(process_frames, "localhost", 8765):
+#         # Serve HTML/JavaScript code
+#         while True:
+#             await asyncio.sleep(1)  # Keep the event loop running
 
-# Run the asyncio event loop
-if __name__ == "__main__":
-    # Start the main coroutine
-    asyncio.run(main())
+# # Run the asyncio event loop
+# if __name__ == "__main__":
+#     # Start the main coroutine
+#     asyncio.run(main())
 
 
+import streamlit as st
+from streamlit_webrtc import webrtc_streamer
+
+webrtc_streamer(key="example")
