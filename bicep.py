@@ -205,7 +205,15 @@
 #     app()
 
 
+import cv2
+import numpy as np
 import streamlit as st
+
+# Function to process each frame
+def process_frame(frame):
+    # Example: Convert frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    return gray
 
 # Streamlit app
 st.title("WebRTC Webcam Stream")
@@ -218,6 +226,27 @@ html_code = """
     .then(stream => {
       const videoElement = document.getElementById('localVideo');
       videoElement.srcObject = stream;
+      
+      // Send frame to backend for processing
+      const sendFrame = () => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Send frame to backend via Streamlit
+        const data = { 'imageData': imageData };
+        const metadata = { 'type': 'imageData' };
+        Streamlit.sendMessage(data, metadata);
+        
+        // Repeat sending frames
+        requestAnimationFrame(sendFrame);
+      };
+      
+      // Start sending frames
+      requestAnimationFrame(sendFrame);
     })
     .catch(error => {
       console.error('Error accessing webcam:', error);
@@ -227,3 +256,22 @@ html_code = """
 
 # Render HTML code in Streamlit app
 st.components.v1.html(html_code, height=400)
+
+# Receive and process frames sent from frontend
+if st._is_running_with_streamlit:
+    # Function to process frame received from frontend
+    @st.cache(allow_output_mutation=True)
+    def process_webcam_frame(image_data):
+        # Convert JavaScript ImageData to numpy array
+        array = np.frombuffer(image_data.data, dtype=np.uint8)
+        frame = array.reshape((image_data.height, image_data.width, 4))[:, :, :3]  # Remove alpha channel
+        return frame
+
+    # Streamlit message handler
+    if "imageData" in st.session_state:
+        frame = process_webcam_frame(st.session_state.imageData)
+        processed_frame = process_frame(frame)
+
+        # Display processed frame
+        st.image(processed_frame, channels="GRAY")
+
