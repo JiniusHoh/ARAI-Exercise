@@ -206,31 +206,50 @@
 
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer
+import cv2
+import mediapipe as mp
+from streamlit_webrtc import VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-st.title("OpenCV Filters on Video Stream")
+# (Optional) Import your specific MediaPipe solution (e.g., hands, pose)
+mp_drawing = mp.solutions.drawing_utils
+mp_<your_solution> = mp.solutions.<your_solution>  # Replace with your solution (e.g., hands, pose)
 
-filter = "none"
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.frame = None
+        # (Optional) Initialize MediaPipe solution
+        self.<your_solution> = mp_<your_solution>.<your_solution>(  # Replace with your solution (e.g., hands, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 1])
+    def recv(self, frame):
+        self.frame = frame.to_ndarray(format="bgr24")
+        return self.process_frame()  # Call process_frame to handle detection
 
-with col1:
-    if st.button("None"):
-        filter = "none"
-with col2:
-    if st.button("Blur"):
-        filter = "blur"
-with col3:
-    if st.button("Grayscale"):
-        filter = "grayscale"
-with col4:
-    if st.button("Sepia"):
-        filter = "sepia"
-with col5:
-    if st.button("Canny"):
-        filter = "canny"
-with col6:
-    if st.button("Invert"):
-        filter = "invert"
+    def process_frame(self):
+        if self.frame is None:
+            return None
 
-webrtc_streamer(key="streamer", sendback_audio=False)
+        # Convert frame to RGB for MediaPipe
+        frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+
+        # (Optional) Perform MediaPipe detection on the frame
+        results = self.<your_solution>.process(frame_rgb)
+
+        # (Optional) Draw detection results on the frame
+        if results.<your_solution>_results:
+            mp_drawing.draw_landmarks(self.frame, results.<your_solution>_landmarks, mp_<your_solution>.<your_solution>_CONNECTIONS)
+
+        # Return the processed frame
+        return self.frame
+
+st.title("Webcam Capture with OpenCV & MediaPipe")
+
+RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+
+webrtc_streamer(key="webcam", mode=WebRtcMode.SENDRECV, rtc_configuration=RTC_CONFIGURATION,
+                media_stream_constraints={"video": True}, video_processor_factory=VideoProcessor)
+
+# Display processed frame (if available)
+if video_processor.frame is not None:
+    st.image(video_processor.frame, channels="BGR")
+    st.write("Real-time video feed with MediaPipe detection")
+
