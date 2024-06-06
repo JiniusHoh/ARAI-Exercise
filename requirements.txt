@@ -6,3 +6,4 @@ gtts
 mediapipe
 av
 websockets
+streamlit-webcam-example
