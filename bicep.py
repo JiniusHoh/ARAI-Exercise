@@ -207,9 +207,7 @@
 
 import streamlit as st
 import cv2
-from PIL import Image
 import numpy as np
-
 from const import CLASSES, COLORS
 from settings import DEFAULT_CONFIDENCE_THRESHOLD, MODEL, PROTOTXT
 
@@ -259,4 +257,3 @@ if st.button("Start"):
         st.write(labels)
         if st.button("Stop"):
             break
-
