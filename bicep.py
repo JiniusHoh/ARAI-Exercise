@@ -205,6 +205,58 @@
 #     app()
 
 
-from streamlit_webrtc import webrtc_streamer
+import streamlit as st
+import cv2
+from PIL import Image
+import numpy as np
 
-webrtc_streamer(key="sample")
+from const import CLASSES, COLORS
+from settings import DEFAULT_CONFIDENCE_THRESHOLD, MODEL, PROTOTXT
+
+@st.cache
+def process_image(image):
+    blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
+    net = cv2.dnn.readNetFromCaffe(PROTOTXT, MODEL)
+    net.setInput(blob)
+    detections = net.forward()
+    return detections
+
+@st.cache
+def annotate_image(image, detections, confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD):
+    (h, w) = image.shape[:2]
+    labels = []
+    for i in np.arange(0, detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        if confidence > confidence_threshold:
+            idx = int(detections[0, 0, i, 1])
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            (startX, startY, endX, endY) = box.astype("int")
+            label = f"{CLASSES[idx]}: {round(confidence * 100, 2)}%"
+            labels.append(label)
+            cv2.rectangle(image, (startX, startY), (endX, endY), COLORS[idx], 2)
+            y = startY - 15 if startY - 15 > 15 else startY + 15
+            cv2.putText(image, label, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
+    return image, labels
+
+st.title("Object detection with MobileNet SSD")
+
+# Function to capture frames from webcam
+def capture_frame():
+    video_capture = cv2.VideoCapture(0)
+    ret, frame = video_capture.read()
+    video_capture.release()
+    return frame
+
+confidence_threshold = st.slider("Confidence threshold", 0.0, 1.0, DEFAULT_CONFIDENCE_THRESHOLD, 0.05)
+
+st.write("Click 'Start' to begin object detection on the webcam stream.")
+if st.button("Start"):
+    while True:
+        frame = capture_frame()
+        detections = process_image(frame)
+        annotated_frame, labels = annotate_image(frame, detections, confidence_threshold)
+        st.image(annotated_frame, channels="BGR")
+        st.write(labels)
+        if st.button("Stop"):
+            break
+
