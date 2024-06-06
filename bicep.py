@@ -206,66 +206,9 @@
 
 
 import streamlit as st
-import cv2
-from PIL import Image
-import numpy as np
-import mediapipe as mp
 
-# Initialize MediaPipe Hands.
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
+from webcam import webcam
 
-# Function to process webcam video frame
-def process_frame(frame):
-    # Convert the frame to RGB
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # Process the frame with MediaPipe Hands
-    results = hands.process(frame_rgb)
-
-    # If hands are detected, draw landmarks on the frame
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            mp.drawing_utils.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-    return frame
-
-# Function to capture frames from webcam using OpenCV
-def webcam():
-    # Open webcam
-    cap = cv2.VideoCapture(0)
-    
-    # Check if webcam opened successfully
-    if not cap.isOpened():
-        st.error("Error: Could not open webcam.")
-        return None
-    
-    while True:
-        # Capture frame-by-frame
-        ret, frame = cap.read()
-        
-        # If frame is successfully captured
-        if ret:
-            # Process the frame
-            processed_frame = process_frame(frame)
-            
-            # Convert the frame to RGB and PIL Image
-            frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-            pil_img = Image.fromarray(frame_rgb)
-            
-            # Display the frame in Streamlit
-            st.image(pil_img, channels="RGB", use_column_width=True)
-            
-            # Break the loop if 'Capture Frame' button is clicked
-            if st.button("Capture Frame"):
-                cap.release()  # Release the webcam
-                return pil_img
-            
-        else:
-            st.error("Error: Failed to capture frame.")
-            break
-
-# Streamlit app
 st.title("Webcam capture component")
 
 st.write("""
@@ -273,9 +216,7 @@ st.write("""
 - Click the "Capture Frame" button to grab the current video frame and
 return it to Streamlit.
 """)
-
 captured_image = webcam()
-
 if captured_image is None:
     st.write("Waiting for capture...")
 else:
