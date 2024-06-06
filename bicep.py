@@ -482,6 +482,12 @@ def app():
             st.markdown(html_content, unsafe_allow_html=True)
 
         webrtc_ctx = WebRtcMode.SENDRECV
+        webrtc_ctx = webrtc_ctx(
+            rtc_configuration=RTCConfiguration(
+                {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+            ),
+            media_stream_constraints={"video": True, "audio": False},
+        )
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while True:
                 if webrtc_ctx.video_processor:
