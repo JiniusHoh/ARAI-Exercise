@@ -291,42 +291,25 @@
 #     # Start the main coroutine
 #     asyncio.run(main())
 
-import streamlit as st
+from streamlit_webrtc import webrtc_streamer, RTCConfiguration
+import av
+import cv2
 
-st.title("WebRTC Webcam Stream with MediaPipe Detection")
+cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-html_code = """
-<video id="localVideo" autoplay playsinline muted></video>
-<img id="processedFrame" style="display: block; margin-top: 20px;" />
-<script>
-  const videoElement = document.getElementById('localVideo');
-  const processedFrameElement = document.getElementById('processedFrame');
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      videoElement.srcObject = stream;
-      const ws = new WebSocket('ws://localhost:8765');
-      ws.onopen = () => {
-        setInterval(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg');
-          const base64 = dataUrl.split(',')[1];
-          ws.send(base64);
-        }, 100);
-      };
-      ws.onmessage = (event) => {
-        processedFrameElement.src = 'data:image/jpeg;base64,' + event.data;
-      };
-    })
-    .catch(error => {
-      console.error('Error accessing webcam:', error);
-    });
-</script>
-"""
+class VideoProcessor:
+	def recv(self, frame):
+		frm = frame.to_ndarray(format="bgr24")
 
-st.components.v1.html(html_code, height=600)
+		faces = cascade.detectMultiScale(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY), 1.1, 3)
 
+		for x,y,w,h in faces:
+			cv2.rectangle(frm, (x,y), (x+w, y+h), (0,255,0), 3)
 
+		return av.VideoFrame.from_ndarray(frm, format='bgr24')
+
+webrtc_streamer(key="key", video_processor_factory=VideoProcessor,
+				rtc_configuration=RTCConfiguration(
+					{"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+					)
+	)
