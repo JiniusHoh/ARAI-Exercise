@@ -7,7 +7,6 @@ import base64
 from webcam import webcam
 
 
-
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
@@ -91,7 +90,7 @@ def app():
             st.markdown(html_content, unsafe_allow_html=True)
 
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-            while captured_image.isOpened():
+            while captured_image is True:
                 ret, frame = captured_image.read()
                 if not ret:
                     break
@@ -190,7 +189,7 @@ def app():
 
                 stframe.image(image, channels="BGR")  # Display RGB frame
 
-        captured_image.release()
+        # captured_image.release()
 
     else:
         gif_html = f"""
@@ -204,4 +203,3 @@ def app():
 
 if __name__ == '__main__':
     app()
-
