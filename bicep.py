@@ -207,18 +207,23 @@
 
 import streamlit as st
 
-from webcam import webcam
+# Streamlit app
+st.title("WebRTC Webcam Stream")
 
-st.title("Webcam capture component")
+# HTML and JavaScript code to access webcam and send stream
+html_code = """
+<video id="localVideo" autoplay playsinline muted></video>
+<script>
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      const videoElement = document.getElementById('localVideo');
+      videoElement.srcObject = stream;
+    })
+    .catch(error => {
+      console.error('Error accessing webcam:', error);
+    });
+</script>
+"""
 
-st.write("""
-- Accesses the user's webcam and displays the video feed in the browser.
-- Click the "Capture Frame" button to grab the current video frame and
-return it to Streamlit.
-""")
-captured_image = webcam()
-if captured_image is None:
-    st.write("Waiting for capture...")
-else:
-    st.write("Got an image from the webcam:")
-    st.image(captured_image)
+# Render HTML code in Streamlit app
+st.components.v1.html(html_code, height=400)
