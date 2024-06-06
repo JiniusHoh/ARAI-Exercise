@@ -293,20 +293,24 @@
 
 
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, VideoProcessorBase
-import av
 
-class VideoProcessor(VideoProcessorBase):
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
+# Streamlit app
+st.title("WebRTC Webcam Stream")
 
-        # You can perform any image processing here (optional)
-        # For instance, convert to grayscale:
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+# HTML and JavaScript code to access webcam and send stream
+html_code = """
+<video id="localVideo" autoplay playsinline muted></video>
+<script>
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      const videoElement = document.getElementById('localVideo');
+      videoElement.srcObject = stream;
+    })
+    .catch(error => {
+      console.error('Error accessing webcam:', error);
+    });
+</script>
+"""
 
-st.title("Webcam Live Feed")
-st.subheader("This is a live webcam feed using Streamlit and WebRTC")
-
-webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_processor_factory=VideoProcessor)
+# Render HTML code in Streamlit app
+st.components.v1.html(html_code, height=400)
