@@ -222,6 +222,8 @@ st.write("Click 'Start' to begin streaming from the webcam.")
 if st.button("Start"):
     while True:
         frame = capture_frame()
-        st.image(frame, channels="BGR")
+        # Convert the frame from BGR to RGB format
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        st.image(frame_rgb)
         if st.button("Stop"):
             break
