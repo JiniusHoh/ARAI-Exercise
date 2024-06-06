@@ -206,20 +206,19 @@
 
 
 import streamlit as st
-import cv2
-import numpy as np
 
-img_file_buffer = st.camera_input("Take a picture")
+from webcam import webcam
 
-if img_file_buffer is not None:
-    # To read image file buffer with OpenCV:
-    bytes_data = img_file_buffer.getvalue()
-    cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+st.title("Webcam capture component")
 
-    # Check the type of cv2_img:
-    # Should output: <class 'numpy.ndarray'>
-    st.write(type(cv2_img))
-
-    # Check the shape of cv2_img:
-    # Should output shape: (height, width, channels)
-    st.write(cv2_img.shape)
+st.write("""
+- Accesses the user's webcam and displays the video feed in the browser.
+- Click the "Capture Frame" button to grab the current video frame and
+return it to Streamlit.
+""")
+captured_image = webcam()
+if captured_image is None:
+    st.write("Waiting for capture...")
+else:
+    st.write("Got an image from the webcam:")
+    st.image(captured_image)
