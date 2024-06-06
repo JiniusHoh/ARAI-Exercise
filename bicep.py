@@ -385,67 +385,50 @@ def app():
                             continue  # Skip the rest of the loop
 
                         # Only give feedback if it's different from the last feedback given
-			if feedback_status != last_feedback:
-			play_audio(feedback_status, filename)
-			last_feedback = feedback_status
+                        if feedback_status != last_feedback:
+		   	    play_audio(feedback_status, filename)
+                            last_feedback = feedback_status
 
-                # Ensure the left elbow landmark is detected
-                if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
-                    # Get the left elbow landmark coordinates
-                    left_elbow_x = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * frame.shape[1])
-                    left_elbow_y = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0])
+                    # Ensure the left elbow landmark is detected
+                    if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
+                        # Get the left elbow landmark coordinates
+                        left_elbow_x = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * frame.shape[1])
+                        left_elbow_y = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * frame.shape[0])
 
-                    # Display the angle value near the left elbow position
-                    cv2.putText(frame, str(angle),
-                                (left_elbow_x, left_elbow_y),  # Use left elbow coordinates
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                        # Display the angle value near the left elbow position
+                        cv2.putText(frame, str(angle),
+                                    (left_elbow_x, left_elbow_y),  # Use left elbow coordinates
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-                # Adjust sequence stage text
-                cv2.putText(frame, f"Stage: {sequence_stage}",
-                            (10, frame.shape[0] - 55),  # Position at the left bottom corner
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+                    # Adjust sequence stage text
+                    cv2.putText(frame, f"Stage: {sequence_stage}",
+                                (10, frame.shape[0] - 55),  # Position at the left bottom corner
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
-                # Adjust feedback status text
-                cv2.putText(frame, f"Feedback: {feedback_status}",
-                            (10, frame.shape[0] - 20),  # Position above the sequence stage text
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+                    # Adjust feedback status text
+                    cv2.putText(frame, f"Feedback: {feedback_status}",
+                                (10, frame.shape[0] - 20),  # Position above the sequence stage text
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
 
-                cv2.rectangle(frame, (0, 0), (225, 73), (245, 117, 16), -1)
-                cv2.putText(frame, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
-                cv2.putText(frame, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                cv2.putText(frame, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
-                cv2.putText(frame, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.rectangle(frame, (0, 0), (225, 73), (245, 117, 16), -1)
+                    cv2.putText(frame, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
+                    cv2.putText(frame, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(frame, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
+                    cv2.putText(frame, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-                # Draw landmarks and connections
-                mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                            mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-                                            mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
+                    # Draw landmarks and connections
+                    mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                                mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
+                                                mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
 
-                # Resize the image to make it larger
-                frame = cv2.resize(frame, (1200, 800))  # Resize the image
+                    # Resize the image to make it larger
+                    frame = cv2.resize(frame, (1200, 800))  # Resize the image
 
-                stframe.image(frame, channels="BGR")  # Display RGB frame
+                    stframe.image(frame, channels="BGR")  # Display RGB frame
 
-            except Exception as e:
-                print(e)
-                pass
-	cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
-	cv2.putText(image, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
-	cv2.putText(image, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-	cv2.putText(image, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
-	cv2.putText(image, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-	# Draw landmarks and connections
-	mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-				    mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-				    mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
-
-	# Resize the image to make it larger
-	image = cv2.resize(image, (1200, 800))  # Resize the image
-
-	stframe.image(image, channels="BGR")  # Display RGB frame
-
-        # captured_image.release()
+                except Exception as e:
+                    print(e)
+                    pass
 
     else:
         gif_html = f"""
