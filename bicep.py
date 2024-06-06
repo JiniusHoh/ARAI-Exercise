@@ -293,24 +293,36 @@
 
 
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, VideoProcessorBase
+import av
+import cv2
+import mediapipe as mp
 
-# Streamlit app
-st.title("WebRTC Webcam Stream")
+# Initialize MediaPipe
+mp_drawing = mp.solutions.drawing_utils
+mp_face_detection = mp.solutions.face_detection
 
-# HTML and JavaScript code to access webcam and send stream
-html_code = """
-<video id="localVideo" autoplay playsinline muted></video>
-<script>
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      const videoElement = document.getElementById('localVideo');
-      videoElement.srcObject = stream;
-    })
-    .catch(error => {
-      console.error('Error accessing webcam:', error);
-    });
-</script>
-"""
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.2)
+    
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
 
-# Render HTML code in Streamlit app
-st.components.v1.html(html_code, height=400)
+        # Convert the image from BGR to RGB
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Perform face detection
+        results = self.face_detection.process(img_rgb)
+
+        # Draw face detection annotations on the image
+        if results.detections:
+            for detection in results.detections:
+                mp_drawing.draw_detection(img, detection)
+
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
+
+st.title("Webcam Live Feed with MediaPipe Face Detection")
+st.subheader("This is a live webcam feed using Streamlit, WebRTC, and MediaPipe")
+
+webrtc_streamer(key="example", mode=WebRtcMode.SENDRECV, video_processor_factory=VideoProcessor)
