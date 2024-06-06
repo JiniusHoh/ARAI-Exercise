@@ -206,52 +206,55 @@
 
 
 import streamlit as st
-import numpy as np
 import cv2
-from webcam import webcam
+import numpy as np
 
-st.title("Webcam Video Feed and OpenCV Processing")
+from webcam import webcam  # Assuming your webcam component returns a NumPy array
+
+def process_frame(frame):
+    """
+    This function performs your desired OpenCV processing on the captured frame.
+
+    Replace the placeholder code with your specific processing logic (e.g., grayscale conversion,
+    object detection, image manipulation).
+    """
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    return gray_frame
+
+st.title("Webcam capture and OpenCV processing")
 
 st.write("""
-- Access the user's webcam and display the video feed in the browser.
-- Process each frame with OpenCV in real-time.
+- Accesses the user's webcam and displays the video feed.
+- Click the "Capture Frame" button to grab the current frame for processing with OpenCV.
+- Processed frame is displayed alongside the original video feed.
 """)
 
-# Start capturing the video feed
-video_feed = webcam()
+run_processing = st.checkbox("Enable OpenCV Processing")
 
-# Check if video feed is available
-if video_feed is None:
-    st.write("Waiting for video feed...")
+captured_image = webcam()
+if captured_image is None:
+    st.write("Waiting for capture...")
 else:
-    st.write("Streaming video feed from the webcam:")
+    # Display the original video feed with correct color channels
+    st.image(captured_image, channels="BGR")
 
-    # Define a function to process frames
-    def process_frame(frame):
-        # Convert the frame to a NumPy array
-        img_array = np.array(frame)
+    if run_processing:
+        try:
+            # Convert captured image to OpenCV format (assuming RGB)
+            if captured_image.shape[2] == 4:  # Check for alpha channel (RGBA)
+                frame = cv2.cvtColor(captured_image, cv2.COLOR_RGBA2BGR)
+            else:
+                # Handle potential BGR input (less likely)
+                frame = captured_image[..., ::-1] if captured_image.dtype == np.uint8 else captured_image.astype(np.uint8)[:, :, ::-1]
 
-        # OpenCV processing example: Convert to grayscale
-        gray_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+            # Process the frame using OpenCV
+            processed_frame = process_frame(frame)
 
-        return gray_image
+            # Display the processed frame
+            st.image(processed_frame, channels="BGR")
+            st.write("Processed frame with OpenCV")
 
-    # Display the video feed and processed frames
-    while True:
-        # Capture the current frame
-        frame = video_feed.read()
+        except cv2.error as e:
+            st.error(f"OpenCV Error: {e}")
+            st.write("Please check your code or image format compatibility.")
 
-        if frame is None:
-            break
-
-        # Process the frame using OpenCV
-        processed_frame = process_frame(frame)
-
-        # Display the original frame
-        st.image(frame, caption="Original Frame", channels="RGB", use_column_width=True)
-
-        # Display the processed frame
-        st.image(processed_frame, caption="Processed Frame (Grayscale)", use_column_width=True)
-
-        # Add a short delay to avoid excessive CPU usage
-        st.time.sleep(0.03)
