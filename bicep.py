@@ -205,11 +205,6 @@
 #     app()
 
 
-import streamlit as st
+from streamlit_webrtc import webrtc_streamer
 
-from camera_input_live import camera_input_live
-
-image = camera_input_live()
-
-if image:
-  st.image(image)
+webrtc_streamer(key="sample")
