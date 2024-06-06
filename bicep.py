@@ -205,28 +205,18 @@
 #     app()
 
 
+import cv2
 import streamlit as st
-from streamlit_webrtc import VideoTransformer, webrtc_streamer
 
-class VideoProcessor(VideoTransformer):
-    def transform(self, frame):
-        # Here you can perform any processing on the frame
-        return frame
+st.title("Webcam Live Feed")
+run = st.checkbox("Run")
+FRAME_WINDOW = st.image([])
 
-def main():
-    st.title("Webcam Stream")
+camera = cv2.VideoCapture(0)
 
-    # Create a WebRTC streamer to capture webcam video
-    webrtc_ctx = webrtc_streamer(
-        key="example",
-        video_transformer_factory=VideoProcessor,
-        async_transform=True,
-    )
-
-    # If we have a streamer object, show the video feed
-    if webrtc_ctx.video_transformer:
-        st.write("Webcam stream:")
-        st.video(webrtc_ctx.video_transformer)
-
-if __name__ == "__main__":
-    main()
+while run:
+    _, frame = camera.read()
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    FRAME_WINDOW.image(frame)
+else:
+    st.write("Stopped")
