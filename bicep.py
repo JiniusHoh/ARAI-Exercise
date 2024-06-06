@@ -293,25 +293,12 @@
 
 
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer
 
-# Streamlit app
-st.title("WebRTC Webcam Stream")
+st.title("Webcam Live Feed")
+st.subheader("This is a live webcam feed using Streamlit and WebRTC")
 
-# HTML and JavaScript code to access webcam and send stream
-html_code = """
-<video id="localVideo" autoplay playsinline muted></video>
-<script>
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      const videoElement = document.getElementById('localVideo');
-      videoElement.srcObject = stream;
-    })
-    .catch(error => {
-      console.error('Error accessing webcam:', error);
-    });
-</script>
-"""
+# Start the webcam stream
+webrtc_streamer(key="example")
 
-# Render HTML code in Streamlit app
-st.components.v1.html(html_code, height=400)
 
