@@ -386,8 +386,8 @@ def app():
 
                         # Only give feedback if it's different from the last feedback given
                         if feedback_status != last_feedback:
-		   	    play_audio(feedback_status, filename)
-                            last_feedback = feedback_status
+		   	   play_audio(feedback_status, filename)
+                           last_feedback = feedback_status
 
                     # Ensure the left elbow landmark is detected
                     if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
