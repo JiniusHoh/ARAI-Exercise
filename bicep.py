@@ -247,6 +247,8 @@ def process_stream():
         # Convert the frame to grayscale
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         return gray_frame
+    else:
+        st.error("Error capturing frame from webcam stream")
 
 # Display the processed stream
 while True:
@@ -255,7 +257,7 @@ while True:
         processed_frame_rgb = convert_BGR_to_RGB(processed_frame)
         st.image(processed_frame_rgb, channels="RGB")
     else:
-        st.error("Error processing webcam stream")
+        st.error("Error processing frame from webcam stream")
         break
 
 # Release the webcam
