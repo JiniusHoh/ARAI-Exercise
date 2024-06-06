@@ -206,42 +206,36 @@
 
 
 import streamlit as st
-import cv2
 import numpy as np
+import cv2
+from webcam import webcam
 
-from webcam import webcam  # Assuming your webcam component returns a NumPy array
-
-def process_frame(frame):
-    # Apply OpenCV processing logic here (e.g., grayscale conversion, feature detection)
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    return gray_frame
-
-st.title("Webcam capture and OpenCV processing")
+st.title("Webcam Capture and OpenCV Processing")
 
 st.write("""
-- Accesses the user's webcam and displays the video feed.
-- Click the "Capture Frame" button to grab the current frame for processing with OpenCV.
-- Processed frame is displayed alongside the original video feed.
+- Access the user's webcam and display the video feed in the browser.
+- Click the "Capture Frame" button to grab the current video frame and return it to Streamlit.
+- The captured frame is then processed with OpenCV.
 """)
 
-run_processing = st.checkbox("Enable OpenCV Processing")
-
+# Capture the image from the webcam
 captured_image = webcam()
+
 if captured_image is None:
     st.write("Waiting for capture...")
 else:
-    # Display the original video feed
-    st.image(captured_image, channels="BGR")  # Specify channels for OpenCV image
+    st.write("Got an image from the webcam:")
+    st.image(captured_image)
 
-    if run_processing:
-        # Convert captured image to OpenCV format (assuming BGR)
-        frame = cv2.cvtColor(captured_image, cv2.COLOR_RGB2BGR)
+    # Convert the image to a format that OpenCV can work with
+    img_array = np.array(captured_image.convert('RGB'))
 
-        # Process the frame using OpenCV
-        processed_frame = process_frame(frame)
+    # OpenCV processing example: Convert to grayscale
+    gray_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
 
-        # Display the processed frame
-        st.image(processed_frame, channels="BGR")
-        st.write("Processed frame with OpenCV")
+    # Display the original and processed images
+    st.write("Original Image:")
+    st.image(img_array, channels="RGB")
 
-
+    st.write("Grayscale Image (Processed with OpenCV):")
+    st.image(gray_image, channels="GRAY")
