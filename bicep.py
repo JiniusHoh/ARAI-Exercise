@@ -291,24 +291,9 @@
 #     # Start the main coroutine
 #     asyncio.run(main())
 
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan  7 20:45:26 2021
-
-@author: malraharsh
-"""
-import cv2
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer
 
-st.title("Webcam Live Feed")
-run = st.checkbox('Run')
-FRAME_WINDOW = st.image([])
-camera = cv2.VideoCapture(0)
+st.title("OpenCV Filters on Video Stream")
 
-while run:
-    _, frame = camera.read()
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    FRAME_WINDOW.image(frame)
-else:
-    st.write('Stopped')
-    
+webrtc_streamer(key="streamer", sendback_audio=False)
