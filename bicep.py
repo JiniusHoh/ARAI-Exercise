@@ -241,7 +241,7 @@ else:
     if run_processing:
         try:
             # Convert captured image to OpenCV format (assuming RGB)
-            if captured_image.shape[2] == 4:  # Check for alpha channel (RGBA)
+            if captured_image is not None and captured_image.shape[2] == 4:  # Check for alpha channel (RGBA)
                 frame = cv2.cvtColor(captured_image, cv2.COLOR_RGBA2BGR)
             else:
                 # Handle potential BGR input (less likely)
