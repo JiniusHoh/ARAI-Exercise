@@ -291,24 +291,24 @@
 #     # Start the main coroutine
 #     asyncio.run(main())
 
-import streamlit as st
-# Streamlit app
-st.title("WebRTC Webcam Stream")
-
-# HTML and JavaScript code to access webcam and send stream
-html_code = """
-<video id="localVideo" autoplay playsinline muted></video>
-<script>
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      const videoElement = document.getElementById('localVideo');
-      videoElement.srcObject = stream;
-    })
-    .catch(error => {
-      console.error('Error accessing webcam:', error);
-    });
-</script>
+# -*- coding: utf-8 -*-
 """
+Created on Thu Jan  7 20:45:26 2021
 
-# Render HTML code in Streamlit app
-st.components.v1.html(html_code, height=400)
+@author: malraharsh
+"""
+import cv2
+import streamlit as st
+
+st.title("Webcam Live Feed")
+run = st.checkbox('Run')
+FRAME_WINDOW = st.image([])
+camera = cv2.VideoCapture(0)
+
+while run:
+    _, frame = camera.read()
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    FRAME_WINDOW.image(frame)
+else:
+    st.write('Stopped')
+    
