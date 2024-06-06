@@ -206,19 +206,31 @@
 
 
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer
 
-from webcam import webcam
+st.title("OpenCV Filters on Video Stream")
 
-st.title("Webcam capture component")
+filter = "none"
 
-st.write("""
-- Accesses the user's webcam and displays the video feed in the browser.
-- Click the "Capture Frame" button to grab the current video frame and
-return it to Streamlit.
-""")
-captured_image = webcam()
-if captured_image is None:
-    st.write("Waiting for capture...")
-else:
-    st.write("Got an image from the webcam:")
-    st.image(captured_image)
+col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 1])
+
+with col1:
+    if st.button("None"):
+        filter = "none"
+with col2:
+    if st.button("Blur"):
+        filter = "blur"
+with col3:
+    if st.button("Grayscale"):
+        filter = "grayscale"
+with col4:
+    if st.button("Sepia"):
+        filter = "sepia"
+with col5:
+    if st.button("Canny"):
+        filter = "canny"
+with col6:
+    if st.button("Invert"):
+        filter = "invert"
+
+webrtc_streamer(key="streamer", sendback_audio=False)
