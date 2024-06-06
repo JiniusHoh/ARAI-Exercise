@@ -201,18 +201,27 @@
 # if __name__ == '__main__':
 #     app()
 
-import cv2
+import streamlit as st
+from webcam import get_webcam_feed
 
-def webcam():
-    # Open the webcam
-    cap = cv2.VideoCapture(0)  # 0 is the default camera index, change it if you have multiple cameras
-    
-    if not cap.isOpened():
-        print("Error: Unable to open webcam.")
-        return None
-    
-    # Release the camera
-    cap.release()
+st.title("Webcam display component")
 
-# Example usage
-webcam()
+st.write("""
+- Accesses the user's webcam and displays the video feed in the browser.
+""")
+
+# Function to capture webcam frames and display them
+def display_webcam():
+    # Access the webcam feed
+    webcam_feed = get_webcam_feed()
+    
+    if webcam_feed is None:
+        st.error("Error: Unable to access webcam.")
+        return
+    
+    # Display the webcam feed
+    st.image(webcam_feed, channels="RGB")
+
+# Call the function to display the webcam feed
+display_webcam()
+
