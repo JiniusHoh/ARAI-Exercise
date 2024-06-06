@@ -205,61 +205,6 @@
 #     app()
 
 
-import cv2
-import streamlit as st
-import numpy as np
+from streamlit_webrtc import webrtc_streamer
 
-# Function to convert BGR image to RGB
-def convert_BGR_to_RGB(image):
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Streamlit app
-st.title("WebRTC Webcam Stream")
-
-# HTML and JavaScript code to access webcam and send stream
-html_code = """
-<video id="localVideo" autoplay playsinline muted></video>
-<script>
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      const videoElement = document.getElementById('localVideo');
-      videoElement.srcObject = stream;
-    })
-    .catch(error => {
-      console.error('Error accessing webcam:', error);
-    });
-</script>
-"""
-
-# Render HTML code in Streamlit app
-st.components.v1.html(html_code, height=400)
-
-# OpenCV processing
-st.title("OpenCV Processed Stream")
-
-# Get the webcam stream
-video_capture = cv2.VideoCapture(0)
-
-# Function to process the webcam stream
-def process_stream():
-    ret, frame = video_capture.read()
-    if ret:
-        # Convert the frame to grayscale
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        return gray_frame
-    else:
-        st.error("Error capturing frame from webcam stream")
-        return None
-
-# Display the processed stream
-while True:
-    processed_frame = process_stream()
-    if processed_frame is not None:
-        processed_frame_rgb = convert_BGR_to_RGB(processed_frame)
-        st.image(processed_frame_rgb, channels="RGB")
-    else:
-        st.error("Error processing frame from webcam stream")
-        break
-
-# Release the webcam
-video_capture.release()
+webrtc_streamer(key="sample")
