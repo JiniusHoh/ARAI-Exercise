@@ -229,7 +229,7 @@ else:
     # Define a function to process frames
     def process_frame(frame):
         # Convert the frame to a NumPy array
-        img_array = np.array(frame.convert('RGB'))
+        img_array = np.array(frame)
 
         # OpenCV processing example: Convert to grayscale
         gray_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
@@ -248,7 +248,7 @@ else:
         processed_frame = process_frame(frame)
 
         # Display the original frame
-        st.image(frame, caption="Original Frame", use_column_width=True)
+        st.image(frame, caption="Original Frame", channels="RGB", use_column_width=True)
 
         # Display the processed frame
         st.image(processed_frame, caption="Processed Frame (Grayscale)", use_column_width=True)
