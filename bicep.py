@@ -299,7 +299,7 @@ import mediapipe as mp
 from gtts import gTTS
 import base64
 import av
-from streamlit_webrtc import VideoProcessorBase, WebRtcMode
+from streamlit_webrtc import VideoProcessorBase, WebRtcMode, RTCConfiguration
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
