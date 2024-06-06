@@ -207,49 +207,77 @@
 
 import streamlit as st
 import cv2
+from PIL import Image
+import numpy as np
 import mediapipe as mp
-from streamlit_webrtc import VideoProcessorBase, WebRtcMode, webrtc_streamer
 
-# (Optional) Import your specific MediaPipe solution (e.g., hands, pose)
-mp_drawing = mp.solutions.drawing_utils
-mp_<your_solution> = mp.solutions.<your_solution>  # Replace with your solution (e.g., hands, pose)
+# Initialize MediaPipe Hands.
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5)
 
-class VideoProcessor(VideoProcessorBase):
-    def __init__(self):
-        self.frame = None
-        # (Optional) Initialize MediaPipe solution
-        self.<your_solution> = mp_<your_solution>.<your_solution>(  # Replace with your solution (e.g., hands, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+# Function to process webcam video frame
+def process_frame(frame):
+    # Convert the frame to RGB
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Process the frame with MediaPipe Hands
+    results = hands.process(frame_rgb)
 
-    def recv(self, frame):
-        self.frame = frame.to_ndarray(format="bgr24")
-        return self.process_frame()  # Call process_frame to handle detection
+    # If hands are detected, draw landmarks on the frame
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            mp.drawing_utils.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-    def process_frame(self):
-        if self.frame is None:
-            return None
+    return frame
 
-        # Convert frame to RGB for MediaPipe
-        frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+# Function to capture frames from webcam
+def webcam():
+    # Open webcam
+    cap = cv2.VideoCapture(0)
+    
+    # Check if webcam opened successfully
+    if not cap.isOpened():
+        st.error("Error: Could not open webcam.")
+        return None
+    
+    while True:
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        
+        # If frame is successfully captured
+        if ret:
+            # Process the frame
+            processed_frame = process_frame(frame)
+            
+            # Convert the frame to RGB and PIL Image
+            frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(frame_rgb)
+            
+            # Display the frame in Streamlit
+            st.image(pil_img, channels="RGB", use_column_width=True)
+            
+            # Break the loop if 'Capture Frame' button is clicked
+            if st.button("Capture Frame"):
+                cap.release()  # Release the webcam
+                return pil_img
+            
+        else:
+            st.error("Error: Failed to capture frame.")
+            break
 
-        # (Optional) Perform MediaPipe detection on the frame
-        results = self.<your_solution>.process(frame_rgb)
+# Streamlit app
+st.title("Webcam capture component")
 
-        # (Optional) Draw detection results on the frame
-        if results.<your_solution>_results:
-            mp_drawing.draw_landmarks(self.frame, results.<your_solution>_landmarks, mp_<your_solution>.<your_solution>_CONNECTIONS)
+st.write("""
+- Accesses the user's webcam and displays the video feed in the browser.
+- Click the "Capture Frame" button to grab the current video frame and
+return it to Streamlit.
+""")
 
-        # Return the processed frame
-        return self.frame
+captured_image = webcam()
 
-st.title("Webcam Capture with OpenCV & MediaPipe")
-
-RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
-
-webrtc_streamer(key="webcam", mode=WebRtcMode.SENDRECV, rtc_configuration=RTC_CONFIGURATION,
-                media_stream_constraints={"video": True}, video_processor_factory=VideoProcessor)
-
-# Display processed frame (if available)
-if video_processor.frame is not None:
-    st.image(video_processor.frame, channels="BGR")
-    st.write("Real-time video feed with MediaPipe detection")
-
+if captured_image is None:
+    st.write("Waiting for capture...")
+else:
+    st.write("Got an image from the webcam:")
+    st.image(captured_image)
