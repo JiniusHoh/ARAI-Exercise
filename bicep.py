@@ -202,26 +202,14 @@
 #     app()
 
 import streamlit as st
-from webcam import get_webcam_feed
 
-st.title("Webcam display component")
+from webcam import webcam
+
+st.title("Webcam capture component")
 
 st.write("""
 - Accesses the user's webcam and displays the video feed in the browser.
+- Click the "Capture Frame" button to grab the current video frame and
+return it to Streamlit.
 """)
-
-# Function to capture webcam frames and display them
-def display_webcam():
-    # Access the webcam feed
-    webcam_feed = get_webcam_feed()
-    
-    if webcam_feed is None:
-        st.error("Error: Unable to access webcam.")
-        return
-    
-    # Display the webcam feed
-    st.image(webcam_feed, channels="RGB")
-
-# Call the function to display the webcam feed
-display_webcam()
-
+captured_image = webcam()
