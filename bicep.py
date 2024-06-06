@@ -298,7 +298,8 @@ import numpy as np
 import mediapipe as mp
 from gtts import gTTS
 import base64
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
+import av
+from streamlit_webrtc import VideoProcessorBase, WebRtcMode
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
@@ -331,6 +332,109 @@ def calculate_angle(a, b, c):
 
     return int(angle)
 
+class VideoProcessor(VideoProcessorBase):
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+
+        # Flip the image horizontally for a later selfie-view display
+        img = cv2.flip(img, 1)
+
+        # To improve performance, optionally mark the image as not writeable to
+        # pass by reference.
+        img.flags.writeable = False
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        results = pose.process(img)
+
+        # Draw the face detection annotations on the image.
+        img.flags.writeable = True
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        try:
+            landmarks = results.pose_landmarks.landmark
+
+            shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                        landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+            elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                        landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+            wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                        landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+
+            angle = calculate_angle(shoulder, elbow, wrist)
+
+            if angle > 160 and sequence_stage != "Bicep Curl":
+                sequence_stage = "Straighten Arms"
+                stage = "down"
+                feedback_status = "Arms straightened. Go to curl."
+            elif sequence_stage == "Straighten Arms" and angle < 110 and stage == "down":
+                sequence_stage = "Bicep Curl"
+                stage = "up"
+                counter += 1
+                print(counter)
+
+            # Update feedback status on each frame
+            if sequence_stage == "Bicep Curl":
+                if angle < 45:
+                    feedback_status = "Lower down your arm."
+                    filename = 'lower_arm.mp3'
+                elif 45 <= angle <= 65:
+                    feedback_status = "Good Curl!"
+                    filename = 'goodcurl.mp3'
+                # elif 65 < angle <= 105:
+                #     feedback_status = "Raise up your arm."
+                #     filename = 'raise_arm.mp3'
+                elif angle > 160 and stage == "up":
+                    sequence_stage = "Straighten Arms"
+                    stage = "down"
+                    feedback_status = "Arms straightened. Go to curl."
+                    last_feedback = feedback_status
+                    # Skip the rest of the loop
+
+                # Only give feedback if it's different from the last feedback given
+                if feedback_status != last_feedback:
+                    play_audio(feedback_status, filename)
+                    last_feedback = feedback_status
+
+            # Ensure the left elbow landmark is detected
+            if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
+                # Get the left elbow landmark coordinates
+                left_elbow_x = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * img.shape[1])
+                left_elbow_y = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * img.shape[0])
+
+                # Display the angle value near the left elbow position
+                cv2.putText(img, str(angle),
+                            (left_elbow_x, left_elbow_y),  # Use left elbow coordinates
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Adjust sequence stage text
+            cv2.putText(img, f"Stage: {sequence_stage}",
+                        (10, img.shape[0] - 55),  # Position at the left bottom corner
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Adjust feedback status text
+            cv2.putText(img, f"Feedback: {feedback_status}",
+                        (10, img.shape[0] - 20),  # Position above the sequence stage text
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+
+        except Exception as e:
+            print(e)
+            pass
+
+        cv2.rectangle(img, (0, 0), (225, 73), (245, 117, 16), -1)
+        cv2.putText(img, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(img, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+        # Draw landmarks and connections
+        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                   mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
+                                   mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
+
+        # Resize the image to make it larger
+        img = cv2.resize(img, (1200, 800))  # Resize the image
+
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
+
 def app():
     st.set_page_config(layout="wide")  # Set the layout to wide
     st.title("Left Bicep Curl Exercise")
@@ -361,22 +465,6 @@ def app():
         gif_placeholder.empty()  # Clear the GIF
         stframe = st.empty()
 
-        # WebRTC video streaming with higher resolution
-        webrtc_ctx = webrtc_streamer(
-            key="webcam",
-            mode=WebRtcMode.SENDRECV,
-            rtc_configuration=RTCConfiguration(
-                {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-            ),
-            media_stream_constraints={
-                "video": {
-                    "width": 1280,  # Set the desired width
-                    "height": 720,  # Set the desired height
-                },
-                "audio": False,
-            },
-        )
-
         # Set initial values for stage and counter
         counter = 0
         stage = "down"
@@ -393,117 +481,24 @@ def app():
             html_content = create_audio_html(b64_data)
             st.markdown(html_content, unsafe_allow_html=True)
 
+        webrtc_ctx = WebRtcMode.SENDRECV
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while True:
-                if webrtc_ctx.video_receiver:
+                if webrtc_ctx.video_processor:
                     try:
-                        frame = webrtc_ctx.video_receiver.get_frame(timeout=1)
-                    except queue.Empty:
-                        frame = None
+                        video_processor = VideoProcessor(webrtc_ctx)
+                        status = st.spinner("Processing video...")
 
-                    if frame is not None:
-                        img = frame.to_ndarray(format="bgr24")
+                        while True:
+                            frame = video_processor.recv()
 
-                        # Flip the image horizontally for a later selfie-view display
-                        img = cv2.flip(img, 1)
+                            stframe.image(frame.to_ndarray(format="bgr24"), channels="BGR")
 
-                        # To improve performance, optionally mark the image as not writeable to
-                        # pass by reference.
-                        img.flags.writeable = False
-                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                        results = pose.process(img)
-
-                        # Draw the face detection annotations on the image.
-                        img.flags.writeable = True
-                        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-
-                        try:
-                            landmarks = results.pose_landmarks.landmark
-
-                            shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                                        landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                            elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                                        landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-                            wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                                        landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-
-                            angle = calculate_angle(shoulder, elbow, wrist)
-
-                            if angle > 160 and sequence_stage != "Bicep Curl":
-                                sequence_stage = "Straighten Arms"
-                                stage = "down"
-                                feedback_status = "Arms straightened. Go to curl."
-                            elif sequence_stage == "Straighten Arms" and angle < 110 and stage == "down":
-                                sequence_stage = "Bicep Curl"
-                                stage = "up"
-                                counter += 1
-                                print(counter)
-
-                            # Update feedback status on each frame
-                            if sequence_stage == "Bicep Curl":
-                                if angle < 45:
-                                    feedback_status = "Lower down your arm."
-                                    filename = 'lower_arm.mp3'
-                                elif 45 <= angle <= 65:
-                                    feedback_status = "Good Curl!"
-                                    filename = 'goodcurl.mp3'
-                                # elif 65 < angle <= 105:
-                                #     feedback_status = "Raise up your arm."
-                                #     filename = 'raise_arm.mp3'
-                                elif angle > 160 and stage == "up":
-                                    sequence_stage = "Straighten Arms"
-                                    stage = "down"
-                                    feedback_status = "Arms straightened. Go to curl."
-                                    last_feedback = feedback_status
-                                    continue  # Skip the rest of the loop
-
-                                # Only give feedback if it's different from the last feedback given
-                                if feedback_status != last_feedback:
-                                    play_audio(feedback_status, filename)
-                                    last_feedback = feedback_status
-
-                            # Ensure the left elbow landmark is detected
-                            if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
-                                # Get the left elbow landmark coordinates
-                                left_elbow_x = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * img.shape[1])
-                                left_elbow_y = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y * img.shape[0])
-
-                                # Display the angle value near the left elbow position
-                                cv2.putText(img, str(angle),
-                                            (left_elbow_x, left_elbowy),  # Use left elbow coordinates
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-
-                            # Adjust sequence stage text
-                            cv2.putText(img, f"Stage: {sequence_stage}",
-                                        (10, img.shape[0] - 55),  # Position at the left bottom corner
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
-
-                            # Adjust feedback status text
-                            cv2.putText(img, f"Feedback: {feedback_status}",
-                                        (10, img.shape[0] - 20),  # Position above the sequence stage text
-                                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
-
-                        except Exception as e:
-                            print(e)
-                            pass
-
-                        cv2.rectangle(img, (0, 0), (225, 73), (245, 117, 16), -1)
-                        cv2.putText(img, 'REPS', (15, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 1, 0), 1, cv2.LINE_AA)
-                        cv2.putText(img, str(counter), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                        cv2.putText(img, 'STAGE', (100, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 1, cv2.LINE_AA)
-                        cv2.putText(img, stage, (100, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-                        # Draw landmarks and connections
-                        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                                   mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-                                                   mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=2, circle_radius=2))
-
-                        # Resize the image to make it larger
-                        img = cv2.resize(img, (1200, 800))  # Resize the image
-
-                        stframe.image(img, channels="BGR")  # Display RGB frame
+                            status.empty()  # Stop the spinner
+                    except StreamlitAPIException:
+                        break
                 else:
-                    break
+                    webrtc_ctx.video_processor = VideoProcessor(webrtc_ctx)
 
     else:
         gif_html = f"""
