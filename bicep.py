@@ -249,6 +249,7 @@ def process_stream():
         return gray_frame
     else:
         st.error("Error capturing frame from webcam stream")
+        return None
 
 # Display the processed stream
 while True:
