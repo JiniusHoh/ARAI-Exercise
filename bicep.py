@@ -291,6 +291,7 @@
 #     # Start the main coroutine
 #     asyncio.run(main())
 
+import streamlit as st
 # Streamlit app
 st.title("WebRTC Webcam Stream")
 
