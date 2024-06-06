@@ -305,14 +305,20 @@ st.title("MediaPipe Detection with Webcam")
 mp_face_detection = mp.solutions.face_detection
 face_detection = mp_face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5)
 
-# WebRTC video streaming
+# WebRTC video streaming with higher resolution
 webrtc_ctx = webrtc_streamer(
     key="webcam",
     mode=WebRtcMode.SENDRECV,
     rtc_configuration=RTCConfiguration(
         {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
     ),
-    media_stream_constraints={"video": True, "audio": False},
+    media_stream_constraints={
+        "video": {
+            "width": 1280,  # Set the desired width
+            "height": 720,  # Set the desired height
+        },
+        "audio": False,
+    },
 )
 
 # Process frames from the video stream
