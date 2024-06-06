@@ -214,6 +214,9 @@ st.title("Webcam Stream")
 # Function to capture frames from webcam
 def capture_frame():
     video_capture = cv2.VideoCapture(0)
+    if not video_capture.isOpened():
+        st.error("Error: Unable to access the webcam.")
+        return None
     ret, frame = video_capture.read()
     video_capture.release()
     return frame
@@ -222,8 +225,11 @@ st.write("Click 'Start' to begin streaming from the webcam.")
 if st.button("Start"):
     while True:
         frame = capture_frame()
-        # Convert the frame from BGR to RGB format
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        st.image(frame_rgb)
+        if frame is not None:
+            # Convert the frame from BGR to RGB format
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            st.image(frame_rgb)
+        else:
+            break
         if st.button("Stop"):
             break
