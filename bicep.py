@@ -210,32 +210,48 @@ import numpy as np
 import cv2
 from webcam import webcam
 
-st.title("Webcam Capture and OpenCV Processing")
+st.title("Webcam Video Feed and OpenCV Processing")
 
 st.write("""
 - Access the user's webcam and display the video feed in the browser.
-- Click the "Capture Frame" button to grab the current video frame and return it to Streamlit.
-- The captured frame is then processed with OpenCV.
+- Process each frame with OpenCV in real-time.
 """)
 
-# Capture the image from the webcam
-captured_image = webcam()
+# Start capturing the video feed
+video_feed = webcam()
 
-if captured_image is None:
-    st.write("Waiting for capture...")
+# Check if video feed is available
+if video_feed is None:
+    st.write("Waiting for video feed...")
 else:
-    st.write("Got an image from the webcam:")
-    st.image(captured_image)
+    st.write("Streaming video feed from the webcam:")
 
-    # Convert the image to a format that OpenCV can work with
-    img_array = np.array(captured_image.convert('RGB'))
+    # Define a function to process frames
+    def process_frame(frame):
+        # Convert the frame to a NumPy array
+        img_array = np.array(frame.convert('RGB'))
 
-    # OpenCV processing example: Convert to grayscale
-    gray_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+        # OpenCV processing example: Convert to grayscale
+        gray_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
 
-    # Display the original and processed images
-    st.write("Original Image:")
-    st.image(img_array, channels="RGB")
+        return gray_image
 
-    st.write("Grayscale Image (Processed with OpenCV):")
-    st.image(gray_image, channels="GRAY")
+    # Display the video feed and processed frames
+    while True:
+        # Capture the current frame
+        frame = video_feed.read()
+
+        if frame is None:
+            break
+
+        # Process the frame using OpenCV
+        processed_frame = process_frame(frame)
+
+        # Display the original frame
+        st.image(frame, caption="Original Frame", use_column_width=True)
+
+        # Display the processed frame
+        st.image(processed_frame, caption="Processed Frame (Grayscale)", use_column_width=True)
+
+        # Add a short delay to avoid excessive CPU usage
+        st.time.sleep(0.03)
