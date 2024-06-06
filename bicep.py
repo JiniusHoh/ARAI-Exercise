@@ -206,14 +206,12 @@
 
 
 import cv2
-import numpy as np
 import streamlit as st
+import numpy as np
 
-# Function to process each frame
-def process_frame(frame):
-    # Convert frame to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    return gray
+# Function to convert BGR image to RGB
+def convert_BGR_to_RGB(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 # Streamlit app
 st.title("WebRTC Webcam Stream")
@@ -222,31 +220,10 @@ st.title("WebRTC Webcam Stream")
 html_code = """
 <video id="localVideo" autoplay playsinline muted></video>
 <script>
-  const videoElement = document.getElementById('localVideo');
-  
-  // Function to send frame to backend for processing
-  const sendFrame = () => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
-    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    
-    // Send frame to backend via Streamlit
-    const data = { 'imageData': imageData };
-    const metadata = { 'type': 'imageData' };
-    Streamlit.sendMessage(data, metadata);
-    
-    // Repeat sending frames
-    requestAnimationFrame(sendFrame);
-  };
-  
-  // Start sending frames
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
+      const videoElement = document.getElementById('localVideo');
       videoElement.srcObject = stream;
-      requestAnimationFrame(sendFrame);
     })
     .catch(error => {
       console.error('Error accessing webcam:', error);
@@ -257,18 +234,29 @@ html_code = """
 # Render HTML code in Streamlit app
 st.components.v1.html(html_code, height=400)
 
-# Function to process frame received from frontend
-@st.cache(allow_output_mutation=True)
-def process_webcam_frame(image_data):
-    # Convert JavaScript ImageData to numpy array
-    array = np.frombuffer(image_data.data, dtype=np.uint8)
-    frame = array.reshape((image_data.height, image_data.width, 4))[:, :, :3]  # Remove alpha channel
-    return frame
+# OpenCV processing
+st.title("OpenCV Processed Stream")
 
-# Streamlit message handler
-if "imageData" in st.session_state:
-    frame = process_webcam_frame(st.session_state.imageData)
-    processed_frame = process_frame(frame)
+# Get the webcam stream
+video_capture = cv2.VideoCapture(0)
 
-    # Display processed frame
-    st.image(processed_frame, channels="GRAY")
+# Function to process the webcam stream
+def process_stream():
+    ret, frame = video_capture.read()
+    if ret:
+        # Convert the frame to grayscale
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        return gray_frame
+
+# Display the processed stream
+while True:
+    processed_frame = process_stream()
+    if processed_frame is not None:
+        processed_frame_rgb = convert_BGR_to_RGB(processed_frame)
+        st.image(processed_frame_rgb, channels="RGB")
+    else:
+        st.error("Error processing webcam stream")
+        break
+
+# Release the webcam
+video_capture.release()
