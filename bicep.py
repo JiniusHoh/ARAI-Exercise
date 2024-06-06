@@ -481,7 +481,7 @@ def app():
             html_content = create_audio_html(b64_data)
             st.markdown(html_content, unsafe_allow_html=True)
 
-        webrtc_ctx = WebRtcMode.SENDRECV
+        webrtc_ctx = WebRtcMode.SENDRECV()
         webrtc_ctx = webrtc_ctx(
             rtc_configuration=RTCConfiguration(
                 {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
