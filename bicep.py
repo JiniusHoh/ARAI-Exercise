@@ -202,14 +202,34 @@
 #     app()
 
 import streamlit as st
-
+import cv2
 from webcam import webcam
 
-st.title("Webcam capture component")
+st.title("Webcam capture and processing component")
 
 st.write("""
 - Accesses the user's webcam and displays the video feed in the browser.
 - Click the "Capture Frame" button to grab the current video frame and
 return it to Streamlit.
 """)
+
 captured_image = webcam()
+
+if captured_image is None:
+    st.write("Waiting for capture...")
+else:
+    st.write("Got an image from the webcam:")
+    st.image(captured_image)
+
+    # Convert the captured image to OpenCV format (BGR)
+    # OpenCV uses BGR format instead of RGB
+    bgr_image = cv2.cvtColor(captured_image, cv2.COLOR_RGB2BGR)
+
+    # Example OpenCV processing
+    # Here you can perform any image processing operations using OpenCV
+    # For example, you can apply filters, detect objects, etc.
+
+    # Display the processed image
+    st.write("Processed Image:")
+    st.image(bgr_image, channels="BGR")
+
