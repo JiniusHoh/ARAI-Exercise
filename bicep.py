@@ -364,38 +364,30 @@
 # if __name__ == '__main__':
 #     app()
 
+import streamlit as st
 from gtts import gTTS
 import base64
-import streamlit as st
 
-def create_audio_file(feedback_text, filename):
+def generate_audio(feedback_text):
     tts = gTTS(feedback_text)
-    tts.save(filename)
+    tts.save("temp_audio.mp3")
 
-def autoplay_audio(file_path):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode()
-    return b64
+    with open("temp_audio.mp3", "rb") as audio_file:
+        audio_bytes = audio_file.read()
+    return base64.b64encode(audio_bytes).decode()
 
 def create_audio_html(b64_data):
     html_string = f"""
-        <audio controls autoplay="true">
+        <audio controls autoplay>
             <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
         </audio>
     """
     return html_string
 
-def display_audio(feedback_text, filename):
-    create_audio_file(feedback_text, filename)
-    b64_data = autoplay_audio(filename)
-    html_content = create_audio_html(b64_data)
-    st.markdown(html_content, unsafe_allow_html=True)
+st.title("Audio Playback Test")
 
-# Example usage
-feedback_text = "Good Curl!"
-filename = "feedback.mp3"
-display_audio(feedback_text, filename)
+feedback_text = "Lower down your arm."
+b64_data = generate_audio(feedback_text)
+html_content = create_audio_html(b64_data)
 
-
-
+st.markdown(html_content, unsafe_allow_html=True)
