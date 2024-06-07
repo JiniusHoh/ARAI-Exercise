@@ -364,29 +364,38 @@
 # if __name__ == '__main__':
 #     app()
 
+from gtts import gTTS
+import base64
 import streamlit as st
-import streamlit.components.v1 as components
 
-# Title of the app
-st.title('Autoplay Audio in Streamlit')
+def create_audio_file(feedback_text, filename):
+    tts = gTTS(feedback_text)
+    tts.save(filename)
 
-# Define the audio file path
-audio_file_path = 'goodcurl.mp3'  # Replace with your audio file path
+def autoplay_audio(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode()
+    return b64
 
-# HTML + JavaScript for autoplay audio
-autoplay_audio_html = f"""
-<audio id="audio-player" autoplay>
-    <source src="{audio_file_path}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-<script>
-    document.getElementById('audio-player').play().catch(function(error) {{
-        console.log('Autoplay failed:', error);
-    }});
-</script>
-"""
+def create_audio_html(b64_data):
+    html_string = f"""
+        <audio controls autoplay="true">
+            <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
+        </audio>
+    """
+    return html_string
 
-# Embed the HTML + JavaScript in the Streamlit app
-components.html(autoplay_audio_html, height=100)
+def display_audio(feedback_text, filename):
+    create_audio_file(feedback_text, filename)
+    b64_data = autoplay_audio(filename)
+    html_content = create_audio_html(b64_data)
+    st.markdown(html_content, unsafe_allow_html=True)
+
+# Example usage
+feedback_text = "Good Curl!"
+filename = "feedback.mp3"
+display_audio(feedback_text, filename)
+
 
 
