@@ -365,19 +365,28 @@
 #     app()
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Title of the app
-st.title('Autoplay Audio')
+st.title('Autoplay Audio in Streamlit')
 
-# Markdown to embed audio with autoplay
-audio_file = 'goodcurl.mp3'  # Replace with your audio file path
-audio_html = f"""
-    <audio controls autoplay>
-        <source src="{audio_file}" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+# Define the audio file path
+audio_file_path = 'goodcurl.mp3'  # Replace with your audio file path
+
+# HTML + JavaScript for autoplay audio
+autoplay_audio_html = f"""
+<audio id="audio-player" autoplay>
+    <source src="{audio_file_path}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+<script>
+    document.getElementById('audio-player').play().catch(function(error) {{
+        console.log('Autoplay failed:', error);
+    }});
+</script>
 """
 
-# Display the audio player with autoplay
-st.markdown(audio_html, unsafe_allow_html=True)
+# Embed the HTML + JavaScript in the Streamlit app
+components.html(autoplay_audio_html, height=100)
+
 
