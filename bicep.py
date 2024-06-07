@@ -375,19 +375,19 @@ import av
 import time
 
 
-def autoplay_audio(file_path):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode()
-    return b64
+# def autoplay_audio(file_path):
+#     with open(file_path, "rb") as f:
+#         data = f.read()
+#     b64 = base64.b64encode(data).decode()
+#     return b64
 
-def create_audio_html(b64_data):
-    html_string = f"""
-        <audio controls autoplay="true">
-            <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
-        </audio>
-    """
-    return html_string
+# def create_audio_html(b64_data):
+#     html_string = f"""
+#         <audio controls autoplay="true">
+#             <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
+#         </audio>
+#     """
+#     return html_string
 
 # def play_audio(feedback_text, filename):
 #     tts = gTTS(feedback_text)
@@ -397,21 +397,21 @@ def create_audio_html(b64_data):
 #     b64_data = autoplay_audio(audio_file)
 #     html_content = create_audio_html(b64_data)
 #     st.markdown(html_content, unsafe_allow_html=True)
-def play_audio(feedback_text, filename):
-    tts = gTTS(feedback_text)
+# def play_audio(feedback_text, filename):
+#     tts = gTTS(feedback_text)
     
-    # Set filename based on feedback_text
-    if feedback_text == "Lower down your arm.":
-        filename = 'lower_arm.mp3'
-    elif feedback_text == "Good Curl!":
-        filename = 'goodcurl.mp3'
+#     # Set filename based on feedback_text
+#     if feedback_text == "Lower down your arm.":
+#         filename = 'lower_arm.mp3'
+#     elif feedback_text == "Good Curl!":
+#         filename = 'goodcurl.mp3'
     
-    tts.save(filename)  # Save the audio file
-    audio_file = filename
+#     tts.save(filename)  # Save the audio file
+#     audio_file = filename
 
-    b64_data = autoplay_audio(audio_file)
-    html_content = create_audio_html(b64_data)
-    st.markdown(html_content, unsafe_allow_html=True)
+#     b64_data = autoplay_audio(audio_file)
+#     html_content = create_audio_html(b64_data)
+#     st.markdown(html_content, unsafe_allow_html=True)
 
 
 # Initialize MediaPipe's drawing utilities and pose module
@@ -476,15 +476,15 @@ class VideoProcessor:
             if self.sequence_stage == "Bicep Curl":
                 if angle < 45:
                     self.feedback_status = "Lower down your arm."
-                    filename = 'lower_arm.mp3'
+                    # filename = 'lower_arm.mp3'
                     self.last_feedback = self.feedback_status
-                    print("Lower down")
+                    # print("Lower down")
 
                 elif 45 <= angle <= 65:
                     self.feedback_status = "Good Curl!"
-                    filename = 'goodcurl.mp3'
+                    # filename = 'goodcurl.mp3'
                     self.last_feedback = self.feedback_status
-                    print("Good curl")
+                    # print("Good curl")
     
                 elif angle > 160 and self.stage == "up":
                     self.sequence_stage = "Straighten Arms"
@@ -492,9 +492,9 @@ class VideoProcessor:
                     self.feedback_status = "Arms straightened. Go to curl."
                     self.last_feedback = self.feedback_status
 
-                if self.feedback_status != self.last_feedback:
-                    self.play_audio(self.feedback_status, filename)
-                    self.last_feedback = self.feedback_status
+                # if self.feedback_status != self.last_feedback:
+                #     self.play_audio(self.feedback_status, filename)
+                #     self.last_feedback = self.feedback_status
 
             if landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].visibility > 0.5:
                 left_elbow_x = int(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x * image.shape[1])
@@ -541,20 +541,38 @@ def app():
     st.markdown(remark_text)
 
 
+    # webrtc_ctx = webrtc_streamer(
+    #     key="full-body-detection",
+    #     video_processor_factory=VideoProcessor,
+    #     rtc_configuration=RTCConfiguration(
+    #         {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    #     ),
+    #     media_stream_constraints={"video": True, "audio": False},
+    #     async_processing=True,
+    # )
+
     webrtc_ctx = webrtc_streamer(
         key="full-body-detection",
         video_processor_factory=VideoProcessor,
         rtc_configuration=RTCConfiguration(
             {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
         ),
-        media_stream_constraints={"video": True, "audio": False},
+        media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
+        video_html_attrs={
+            "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
+            "controls": False,
+            "autoPlay": True,
+        },
+        audio_html_attrs={
+            "autoPlay": True,
+        },
         async_processing=True,
     )
 
     video_processor = VideoProcessor()
 
     last_feedback = ""
-    filename = ""
+    # filename = ""
 
     # if webrtc_ctx.video_processor:
     #     video_processor = webrtc_ctx.video_processor
@@ -563,24 +581,25 @@ def app():
     #         print(f"Latest feedback status: {feedback_status}")
     #         # Do whatever you want with the feedback_status here
 
-    if webrtc_ctx.video_processor:
-        video_processor = webrtc_ctx.video_processor
-        while True:
-            feedback_status = video_processor.get_feedback_status()
-            # print(f"Latest Update: {feedback_status}")
-            if feedback_status == "Lower down your arm.":
-                # st.audio('lower_arm.mp3', autoplay = True)
-                filename = 'lower_arm.mp3'
-            elif feedback_status == "Good Curl!":
-                # st.audio('goodcurl.mp3', autoplay=True)
-                filename = 'goodcurl.mp3'
+    # if webrtc_ctx.video_processor:
+    #     video_processor = webrtc_ctx.video_processor
+    #     while True:
+    #         feedback_status = video_processor.get_feedback_status()
+    #         # print(f"Latest Update: {feedback_status}")
+    #         if feedback_status == "Lower down your arm.":
+    #             if feedback_status != last_feedback:
+    #                 st.audio('lower_arm.mp3', autoplay = True)
+    #                 last_feedback = feedback_status
+    #             # filename = 'lower_arm.mp3'
+    #         elif feedback_status == "Good Curl!":
+    #             if feedback_status != last_feedback:
+    #                 st.audio('goodcurl.mp3', autoplay=True)
+    #                 last_feedback = feedback_status
         # Only give feedback if it's different from the last feedback given
-            if feedback_status != last_feedback:
-                st.audio(filename, autoplay=True)
-                # play_audio(feedback_status, filename)
-                last_feedback = feedback_status
+            # if feedback_status != last_feedback:
+            #     st.audio(filename, autoplay=True)
+            #     # play_audio(feedback_status, filename)
+            #     last_feedback = feedback_status
 
 if __name__ == '__main__':
     app()
-             
-           
