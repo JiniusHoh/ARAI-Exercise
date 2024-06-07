@@ -367,7 +367,7 @@
 import streamlit as st
 
 # Title of the app
-st.title('Autoplay Audio in Streamlit')
+st.title('Autoplay Audio')
 
 # Markdown to embed audio with autoplay
 audio_file = 'goodcurl.mp3'  # Replace with your audio file path
