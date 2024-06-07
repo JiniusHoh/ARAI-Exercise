@@ -372,6 +372,7 @@ from gtts import gTTS
 import base64
 from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import av
+import time
 
 
 def autoplay_audio(file_path):
@@ -388,14 +389,30 @@ def create_audio_html(b64_data):
     """
     return html_string
 
+# def play_audio(feedback_text, filename):
+#     tts = gTTS(feedback_text)
+#     tts.save(filename)
+#     audio_file = filename
+
+#     b64_data = autoplay_audio(audio_file)
+#     html_content = create_audio_html(b64_data)
+#     st.markdown(html_content, unsafe_allow_html=True)
 def play_audio(feedback_text, filename):
     tts = gTTS(feedback_text)
-    tts.save(filename)
+    
+    # Set filename based on feedback_text
+    if feedback_text == "Lower down your arm.":
+        filename = 'lower_arm.mp3'
+    elif feedback_text == "Good Curl!":
+        filename = 'goodcurl.mp3'
+    
+    tts.save(filename)  # Save the audio file
     audio_file = filename
 
     b64_data = autoplay_audio(audio_file)
     html_content = create_audio_html(b64_data)
     st.markdown(html_content, unsafe_allow_html=True)
+
 
 # Initialize MediaPipe's drawing utilities and pose module
 mp_drawing = mp.solutions.drawing_utils
@@ -537,26 +554,33 @@ def app():
     video_processor = VideoProcessor()
 
     last_feedback = ""
+    filename = ""
+
+    # if webrtc_ctx.video_processor:
+    #     video_processor = webrtc_ctx.video_processor
+    #     while True:
+    #         feedback_status = video_processor.get_feedback_status()
+    #         print(f"Latest feedback status: {feedback_status}")
+    #         # Do whatever you want with the feedback_status here
 
     if webrtc_ctx.video_processor:
         video_processor = webrtc_ctx.video_processor
         while True:
             feedback_status = video_processor.get_feedback_status()
+            # print(f"Latest Update: {feedback_status}")
             if feedback_status == "Lower down your arm.":
-                # st.audio(feedback_status)
+                # st.audio('lower_arm.mp3', autoplay = True)
                 filename = 'lower_arm.mp3'
             elif feedback_status == "Good Curl!":
-                # st.audio(feedback_status)
+                # st.audio('goodcurl.mp3', autoplay=True)
                 filename = 'goodcurl.mp3'
-            # Only give feedback if it's different from the last feedback given
+        # Only give feedback if it's different from the last feedback given
             if feedback_status != last_feedback:
-                play_audio(feedback_status, filename)
+                st.audio(filename, autoplay=True)
+                # play_audio(feedback_status, filename)
                 last_feedback = feedback_status
-            
-
-            # Do whatever you want with the feedback_status here
-
 
 if __name__ == '__main__':
     app()
+             
            
