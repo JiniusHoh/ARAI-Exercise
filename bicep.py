@@ -17,7 +17,7 @@ def autoplay_audio(file_path):
 
 def create_audio_html(b64_data):
     html_string = f"""
-        <audio controls autoplay="true">
+        <audio autoplay="true">
             <source src="data:audio/mp3;base64,{b64_data}" type="audio/mp3">
         </audio>
     """
@@ -179,7 +179,7 @@ def app():
         while True:
             feedback_status = video_processor.get_feedback_status()
             # print(f"Latest Update: {feedback_status}")
-            time.sleep(0.1)  # Delay of 0.1 seconds (100 milliseconds)
+            time.sleep(0.2)  # Delay of 0.1 seconds (100 milliseconds)
             if feedback_status == "Arms straightened. Go to curl.":
                 if feedback_status != last_feedback:
                     last_feedback = feedback_status
