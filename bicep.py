@@ -149,10 +149,11 @@ class VideoProcessor:
 def app():
     st.set_page_config(layout="wide")
     st.title("Left Bicep Curl Exercise")
-    remind_text = "Make sure to allow access of your camera and speaker. Refresh (or press key 'R') the website if there is a lag."
+    remind_text = "Make sure to allow access of your camera and speaker. Refresh the website if there is a lag."
     st.markdown(remind_text)
-    remark_text = "If there is no autoplay sound, press the most bottom audio play button once to autoplay the feedback sound. Might need some time to start autoplay the feedback sound."
-    st.markdown(remark_text)
+    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree.**')
+    st.markdown('**Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
+
 
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
