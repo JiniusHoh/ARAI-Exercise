@@ -99,7 +99,7 @@ class VideoProcessor:
                 print(self.counter)
                 self.stage = "Push Up"
                 # self.feedback_status = "Arms straightened. Go to curl."
-            elif 30 <= angle1 <= 120 and 30 <= angle2 <= 120 and self.sequence_stage != "down":
+            elif 90 <= angle1 <= 120 and 90 <= angle2 <= 120 and self.sequence_stage != "down":
                 self.sequence_stage = "down"
                 self.stage = "Lie Down"
                 
