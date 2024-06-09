@@ -99,7 +99,7 @@ class VideoProcessor:
                 print(self.counter)
                 self.stage = "Push Up"
                 # self.feedback_status = "Arms straightened. Go to curl."
-            elif 30 <= angle1 <= 80 and 30 <= angle2 <= 80 and self.sequence_stage != "down":
+            elif 30 <= angle1 <= 120 and 30 <= angle2 <= 120 and self.sequence_stage != "down":
                 self.sequence_stage = "down"
                 self.stage = "Lie Down"
                 
@@ -166,9 +166,9 @@ class VideoProcessor:
 def app():
     st.set_page_config(layout="wide")
     st.title("Push Up Exercise")
-    remind_text = "Make sure to allow access of your camera and speaker. Refresh the website if there is a lag."
+    remind_text = "**Make sure to allow access of your camera and speaker. Refresh the website if there is a lag.**"
     st.markdown(remind_text)
-    remark_text = "Perfect angle for a push up is more than 160 degree of your straightened arms. Make sure to show your front upper body during a push up to a webcam."
+    remark_text = "**Perfect angle for a push up is more than 160 degree of your straightened arms. Make sure to show your front upper body during a push up to a webcam.**"
     st.markdown(remark_text)
 
     webrtc_ctx = webrtc_streamer(
