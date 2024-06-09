@@ -5,6 +5,4 @@ numpy
 gtts
 mediapipe
 av
-websockets
-streamlit-webcam-example
-streamlit-camera-input-live
+
