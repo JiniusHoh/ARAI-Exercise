@@ -150,7 +150,7 @@ def app():
     st.set_page_config(layout="wide")
     st.title("Left Bicep Curl Exercise")
     st.markdown('**Make sure to allow access of your camera and speaker. Refresh the website if there is a lag.**')
-    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam**')
+    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
 
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
