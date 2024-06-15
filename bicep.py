@@ -157,7 +157,7 @@ def app():
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": "turn:openrelay.metered.ca:80", "username": "openrelayproject", "credentials": "openrelayproject"}]}
+        {"iceServers": [{"urls": "turn:openrelay.metered.ca:80", "username": "openrelayproject", "credential": "openrelayproject"}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
@@ -167,6 +167,7 @@ def app():
     },
     async_processing=True,
 )
+
 
 
     
