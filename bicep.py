@@ -157,7 +157,7 @@ def app():
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": "turns:freestun.tel:5350", "username": "free", "credential": "free"}]}
+        {"iceServers": [{"urls": "turns:freestun.tel:3479", "username": "free", "credential": "free"}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
