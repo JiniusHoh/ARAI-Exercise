@@ -368,20 +368,19 @@ def app():
 
         while True:
             feedback_status = video_processor.get_feedback_status()
-            if feedback_status == "
-            feedback_status == "Arms straightened. Go to curl.":
+            if feedback_status == "Arms straightened. Go to curl.":
                 if feedback_status != last_feedback:
                     last_feedback = feedback_status
-                elif feedback_status == "Lower down your arm.":
-                    filename = 'lower_arm.mp3'
-                    if feedback_status != last_feedback:
-                        play_audio(feedback_status, filename)
-                        last_feedback = feedback_status
-                elif feedback_status == "Good Curl!":
-                    filename = 'goodcurl.mp3'
-                    if feedback_status != last_feedback:
-                        play_audio(feedback_status, filename)
-                        last_feedback = feedback_status
+            elif feedback_status == "Lower down your arm.":
+                filename = 'lower_arm.mp3'
+                if feedback_status != last_feedback:
+                    play_audio(feedback_status, filename)
+                    last_feedback = feedback_status
+            elif feedback_status == "Good Curl!":
+                filename = 'goodcurl.mp3'
+                if feedback_status != last_feedback:
+                    play_audio(feedback_status, filename)
+                    last_feedback = feedback_status
                 time.sleep(0.2)  # Delay of 0.2 seconds to avoid busy-waiting
            
 if __name__ == '__main__':
