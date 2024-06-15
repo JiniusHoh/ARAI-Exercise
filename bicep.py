@@ -8,7 +8,6 @@ from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import av
 from threading import Thread
 import time
-from twilio.rest import Client
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
