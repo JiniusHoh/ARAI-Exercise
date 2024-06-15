@@ -157,7 +157,7 @@ def app():
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": ["stun:stun.cookfree.net:3478"]}]}
+        {"iceServers": [{"urls": "turn:openrelay.metered.ca:80", "username": "openrelayproject", "credentials": "openrelayproject"}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
@@ -167,6 +167,24 @@ def app():
     },
     async_processing=True,
 )
+
+
+    
+
+#     webrtc_ctx = webrtc_streamer(
+#     key="full-body-detection",
+#     video_processor_factory=VideoProcessor,
+#     rtc_configuration=RTCConfiguration(
+#         {"iceServers": [{"urls": ["stun:stun.cookfree.net:3478"]}]}
+#     ),
+#     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
+#     video_html_attrs={
+#         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
+#         "controls": False,
+#         "autoPlay": True,
+#     },
+#     async_processing=True,
+# )
 
     video_processor = VideoProcessor()
 
