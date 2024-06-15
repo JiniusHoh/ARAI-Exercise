@@ -168,36 +168,44 @@ def app():
 #     async_processing=True,
 # )
 
+
+
+# Define RTC Configuration with multiple ICE servers
+    rtc_configuration = RTCConfiguration(
+    {
+        "iceServers": [
+            {
+                "urls": ["stun:stun.relay.metered.ca:80"],
+            },
+            {
+                "urls": ["turn:global.relay.metered.ca:80"],
+                "username": "47d918d6e9c419663f5561b8",
+                "credential": "6QcHngj15KNzDCrd",
+            },
+            {
+                "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
+                "username": "47d918d6e9c419663f5561b8",
+                "credential": "6QcHngj15KNzDCrd",
+            },
+            {
+                "urls": ["turn:global.relay.metered.ca:443"],
+                "username": "47d918d6e9c419663f5561b8",
+                "credential": "6QcHngj15KNzDCrd",
+            },
+            {
+                "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
+                "username": "47d918d6e9c419663f5561b8",
+                "credential": "6QcHngj15KNzDCrd",
+            },
+        ]
+    }
+)
+
+# Configure webrtc_streamer with the defined RTC configuration
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
-    rtc_configuration=RTCConfiguration(
-        {iceServers: [
-      {
-        urls: "stun:stun.relay.metered.ca:80",
-      },
-      {
-        urls: "turn:global.relay.metered.ca:80",
-        username: "47d918d6e9c419663f5561b8",
-        credential: "6QcHngj15KNzDCrd",
-      },
-      {
-        urls: "turn:global.relay.metered.ca:80?transport=tcp",
-        username: "47d918d6e9c419663f5561b8",
-        credential: "6QcHngj15KNzDCrd",
-      },
-      {
-        urls: "turn:global.relay.metered.ca:443",
-        username: "47d918d6e9c419663f5561b8",
-        credential: "6QcHngj15KNzDCrd",
-      },
-      {
-        urls: "turns:global.relay.metered.ca:443?transport=tcp",
-        username: "47d918d6e9c419663f5561b8",
-        credential: "6QcHngj15KNzDCrd",
-      },
-  ]
-    ),
+    rtc_configuration=rtc_configuration,
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
@@ -206,6 +214,7 @@ def app():
     },
     async_processing=True,
 )
+
     video_processor = VideoProcessor()
 
     last_feedback = ""
