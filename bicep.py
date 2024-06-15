@@ -151,13 +151,13 @@ def app():
     st.title("Left Bicep Curl Exercise")
     st.markdown('**Make sure to allow access of your camera and speaker. Refresh the website if there is a lag.**')
     st.image('bicep_curl_angle.png')
-    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
+    st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')    
 
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": "turns:relay1.expressturn.com:3478", "username": "efXW0R2IGNG6EHEBZ9", "credential": "bLGIR2pxFRFc09g8"}]}
+        {"iceServers": [{"urls": ["stun:stun2.l.google.com:19302"]}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
@@ -167,25 +167,6 @@ def app():
     },
     async_processing=True,
 )
-
-
-
-    
-
-#     webrtc_ctx = webrtc_streamer(
-#     key="full-body-detection",
-#     video_processor_factory=VideoProcessor,
-#     rtc_configuration=RTCConfiguration(
-#         {"iceServers": [{"urls": ["stun:stun.cookfree.net:3478"]}]}
-#     ),
-#     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
-#     video_html_attrs={
-#         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
-#         "controls": False,
-#         "autoPlay": True,
-#     },
-#     async_processing=True,
-# )
 
     video_processor = VideoProcessor()
 
