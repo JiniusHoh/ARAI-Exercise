@@ -153,11 +153,11 @@ def app():
     st.image('bicep_curl_angle.png')
     st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
 
-   webrtc_ctx = webrtc_streamer(
+    webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": ["stun:stun.xten.com:3478"]}]}
+        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
