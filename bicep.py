@@ -166,7 +166,7 @@ def app():
         "autoPlay": True,
     },
     async_processing=True,
-)
+    )
 
     video_processor = VideoProcessor()
 
