@@ -1,5 +1,6 @@
 streamlit
 streamlit-webrtc
+streamlit-webrtc aioice
 opencv-python-headless
 numpy
 gtts
