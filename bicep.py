@@ -8,8 +8,8 @@ from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import av
 from threading import Thread
 import time
-from twilio.rest import Client
-import os
+# from twilio.rest import Client
+# import os
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
@@ -155,33 +155,17 @@ def app():
     st.image('bicep_curl_angle.png')
     st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')    
 
-    account_sid = os.environ['AC73fed476bc9cb67f894f1364ac194ab0']
-    auth_token = os.environ['09d9d8dd98c2643e0b2eaa683f993062']
-    client = Client(account_sid, auth_token)
+#     account_sid = os.environ['AC73fed476bc9cb67f894f1364ac194ab0']
+#     auth_token = os.environ['09d9d8dd98c2643e0b2eaa683f993062']
+#     client = Client(account_sid, auth_token)
     
-    token = client.tokens.create()
-
-    webrtc_ctx = webrtc_streamer(
-    key="full-body-detection",
-    video_processor_factory=VideoProcessor,
-    rtc_configuration=RTCConfiguration(
-        {"iceServers": token.ice_servers}
-    ),
-    media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
-    video_html_attrs={
-        "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
-        "controls": False,
-        "autoPlay": True,
-    },
-    async_processing=True,
-)
-
+#     token = client.tokens.create()
 
 #     webrtc_ctx = webrtc_streamer(
 #     key="full-body-detection",
 #     video_processor_factory=VideoProcessor,
 #     rtc_configuration=RTCConfiguration(
-#         {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+#         {"iceServers": token.ice_servers}
 #     ),
 #     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
 #     video_html_attrs={
@@ -191,6 +175,22 @@ def app():
 #     },
 #     async_processing=True,
 # )
+
+
+    webrtc_ctx = webrtc_streamer(
+    key="full-body-detection",
+    video_processor_factory=VideoProcessor,
+    rtc_configuration=RTCConfiguration(
+        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    ),
+    media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
+    video_html_attrs={
+        "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
+        "controls": False,
+        "autoPlay": True,
+    },
+    async_processing=True,
+)
 
     video_processor = VideoProcessor()
 
