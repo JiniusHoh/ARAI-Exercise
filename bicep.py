@@ -8,6 +8,7 @@ from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import av
 from threading import Thread
 import time
+from twilio.rest import Client
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
@@ -153,11 +154,19 @@ def app():
     st.image('bicep_curl_angle.png')
     st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
 
+    # Find your Account SID and Auth Token at twilio.com/console
+    # and set the environment variables. See http://twil.io/secure
+    account_sid = os.environ['AC73fed476bc9cb67f894f1364ac194ab0']
+    auth_token = os.environ['40ebb86ce8ad9541cc30751d6996a2a0']
+    client = Client(account_sid, auth_token)
+    
+    token = client.tokens.create()
+
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": ["stun:stun.cookfree.net:3478"]}]}
+        {"iceServers": token.ice_servers}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
@@ -167,6 +176,21 @@ def app():
     },
     async_processing=True,
 )
+
+#     webrtc_ctx = webrtc_streamer(
+#     key="full-body-detection",
+#     video_processor_factory=VideoProcessor,
+#     rtc_configuration=RTCConfiguration(
+#         {"iceServers": [{"urls": ["stun:stun.cookfree.net:3478"]}]}
+#     ),
+#     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
+#     video_html_attrs={
+#         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
+#         "controls": False,
+#         "autoPlay": True,
+#     },
+#     async_processing=True,
+# )
 
     video_processor = VideoProcessor()
 
