@@ -153,59 +153,12 @@ def app():
     st.image('bicep_curl_angle.png')
     st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
 
-#     webrtc_ctx = webrtc_streamer(
-#     key="full-body-detection",
-#     video_processor_factory=VideoProcessor,
-#     rtc_configuration=RTCConfiguration(
-#         {"iceServers": [{"urls": ["stun:stun.xten.com:3478"]}]}
-#     ),
-#     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
-#     video_html_attrs={
-#         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
-#         "controls": False,
-#         "autoPlay": True,
-#     },
-#     async_processing=True,
-# )
-
-
-
-# Define RTC Configuration with multiple ICE servers
-    rtc_configuration = RTCConfiguration(
-    {
-        "iceServers": [
-            {
-                "urls": ["stun:stun.relay.metered.ca:80"],
-            },
-            {
-                "urls": ["turn:global.relay.metered.ca:80"],
-                "username": "47d918d6e9c419663f5561b8",
-                "credential": "6QcHngj15KNzDCrd",
-            },
-            {
-                "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
-                "username": "47d918d6e9c419663f5561b8",
-                "credential": "6QcHngj15KNzDCrd",
-            },
-            {
-                "urls": ["turn:global.relay.metered.ca:443"],
-                "username": "47d918d6e9c419663f5561b8",
-                "credential": "6QcHngj15KNzDCrd",
-            },
-            {
-                "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
-                "username": "47d918d6e9c419663f5561b8",
-                "credential": "6QcHngj15KNzDCrd",
-            },
-        ]
-    }
-)
-
-# Configure webrtc_streamer with the defined RTC configuration
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
-    rtc_configuration=rtc_configuration,
+    rtc_configuration=RTCConfiguration(
+        {"iceServers": [{"urls": ["stun:global.stun.twilio.com:3478"]}]}
+    ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
         "style": {"width": "50%", "margin": "0 auto", "border": "5px purple solid"},
