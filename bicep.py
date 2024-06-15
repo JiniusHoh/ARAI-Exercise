@@ -159,7 +159,7 @@ def app():
     rtc_configuration=RTCConfiguration(
         {"iceServers": [{"urls": ["turn:13.250.13.83:3478?transport=udp"]}]}
         "username": "YzYNCouZM1mhqhmseWk6",
-        "credential": "YzYNCouZM1mhqhmseWk6"
+        "credential": "YzYNCouZM1mhqhmseWk6",
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
