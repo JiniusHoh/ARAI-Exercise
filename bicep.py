@@ -152,6 +152,7 @@ def app():
     st.markdown('**Make sure to allow access of your camera and speaker. Refresh the website if there is a lag.**')
     st.image('bicep_curl_angle.png')
     st.markdown('**Perfect angle for a bicep curl is 45 degree to 60 degree. Try now with your left arm! Make sure to show your upper body with your left arm into your webcam.**')
+    st.set_option('server.maxUploadSize', 50) 
 
     webrtc_ctx = webrtc_streamer(
     key="full-body-detection",
