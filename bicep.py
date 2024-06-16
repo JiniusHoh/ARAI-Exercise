@@ -158,7 +158,7 @@ def app():
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": ["stun:stun.minisipserver.com"]}]}
+        {"iceServers": [{"urls": ["stun:stun.ekiga.net"]}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
