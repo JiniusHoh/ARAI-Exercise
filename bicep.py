@@ -8,8 +8,7 @@ from streamlit_webrtc import webrtc_streamer, RTCConfiguration
 import av
 from threading import Thread
 import time
-# from twilio.rest import Client
-# import os
+
 
 def autoplay_audio(file_path):
     with open(file_path, "rb") as f:
@@ -159,7 +158,7 @@ def app():
     key="full-body-detection",
     video_processor_factory=VideoProcessor,
     rtc_configuration=RTCConfiguration(
-        {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+        {"iceServers": [{"urls": ["stun:stun.minisipserver.com"]}]}
     ),
     media_stream_constraints={"video": {"frameRate": {"ideal": 15}}, "audio": False},
     video_html_attrs={
