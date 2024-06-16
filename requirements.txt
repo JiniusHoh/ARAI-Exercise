@@ -1,5 +1,5 @@
 streamlit==1.19.0
-streamlit_webrtc==0.44.7
+streamlit_webrtc
 opencv-python-headless
 numpy
 gtts
