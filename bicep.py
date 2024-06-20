@@ -165,6 +165,11 @@ def app():
                 "credential": "bLGIR2pxFRFc09g8"
             },
             {
+                "urls": ["turn:relay1.expressturn.com:3478"],
+                "username": "efO4MKN4OL2QV6BIAJ",
+                "credential": "Qh45wj0boe6OzEwA"
+            },
+            {
                 "urls": ["stun:stun.l.google.com:19302"]
             }
         ]}
